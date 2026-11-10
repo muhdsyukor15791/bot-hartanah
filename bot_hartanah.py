@@ -1,6 +1,7 @@
 import logging
 import json
 import os
+import io
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
@@ -14,12 +15,10 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-API_TOKEN = (
-    "8924536875:"
-    "AAHOATpmmc6l-"
-    "zJV8efdI5TLaedk7GCnbho"
-)
-GROUP_CHAT_ID = -1003288686118  # Nombor ID Group yang sah
+API_TOKEN = "8924536875:AAHOATpmmc6l-zJV8efdI5TLaedk7GCnbho"
+GROUP_CHAT_ID = -1003288686118
+BACKUP_CHANNEL_ID = -5119617442
+
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
 
@@ -41,35 +40,57 @@ def run_web_server():
     server.serve_forever()
 # -------------------------------------------------
 
-def load_data():
+async def load_data_from_channel(app: Application):
+    """Membaca data JSON tempatan atau dari backup."""
     global listings_db, pinned_index_message_id
-    if os.path.exists(DB_FILE):
-        try:
+    try:
+        if os.path.exists(DB_FILE):
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
                 raw_listings = data.get('listings', {})
-                listings_db = {}
-                for idx, (old_key, val) in enumerate(sorted(raw_listings.items(), key=lambda x: int(x[0])), start=1):
-                    listings_db[idx] = val
-                    
+                listings_db = {int(k): v for k, v in raw_listings.items()}
                 pinned_index_message_id = data.get('pinned_index_message_id')
-                print(f"✅ Data dimuatkan & dinomborkan semula: {len(listings_db)} listing.")
-        except Exception as e:
-            print(f"⚠️ Gagal baca DB: {e}")
-            listings_db = {}
-    else:
+                print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
+                return
+
+        print("🔄 Mencari fail backup data...")
+        listings_db = {}
+    except Exception as e:
+        print(f"⚠️ Gagal memuatkan data: {e}")
         listings_db = {}
 
 def save_data():
+    """Menyimpan data ke fail tempatan JSON."""
     try:
         with open(DB_FILE, 'w') as f:
             json.dump({
                 'listings': listings_db,
                 'pinned_index_message_id': pinned_index_message_id
             }, f, indent=4)
-            print("💾 Data disimpan ke JSON.")
+            print("💾 Data disimpan ke fail tempatan JSON.")
     except Exception as e:
-        print(f"⚠️ Gagal simpan data: {e}")
+        print(f"⚠️ Gagal simpan data tempatan: {e}")
+
+async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
+    """Menghantar fail backup listings_data.json terus ke Private Channel secara senyap."""
+    save_data()
+    try:
+        data_to_send = json.dumps({
+            'listings': listings_db,
+            'pinned_index_message_id': pinned_index_message_id
+        }, indent=4).encode('utf-8')
+
+        file_doc = io.BytesIO(data_to_send)
+        file_doc.name = DB_FILE
+
+        await context.bot.send_document(
+            chat_id=BACKUP_CHANNEL_ID,
+            document=file_doc,
+            caption="📦 **Auto-Backup Listing Data (Terkini)**"
+        )
+        print("☁️ Data berjaya di-backup ke Telegram Channel!")
+    except Exception as e:
+        print(f"⚠️ Gagal backup ke Telegram Channel: {e}")
 
 def get_next_listing_id():
     if not listings_db:
@@ -124,7 +145,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                     parse_mode="Markdown",
                     disable_web_page_preview=True
                 )
-                save_data()
+                await backup_to_channel(context)
                 return True
             except Exception as edit_err:
                 print(f"⚠️ Tidak dapat edit mesej index lama: {edit_err}")
@@ -137,7 +158,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             disable_web_page_preview=True
         )
         pinned_index_message_id = sent_msg.message_id
-        save_data()
+        await backup_to_channel(context)
         
         try:
             await context.bot.pin_chat_message(
@@ -173,7 +194,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
-    print(f"🔘 Butang ditekan: {data}")
 
     if data == "add_listing":
         context.user_data['state'] = 'WAITING_FOR_LISTING_PHOTOS'
@@ -186,7 +206,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "refresh_index":
         success = await update_index_page(context)
         if success:
-            await query.message.reply_text("✅ Index berjaya disegarkan!")
+            await query.message.reply_text("✅ Index berjaya disegarkan & data di-backup!")
         else:
             await query.message.reply_text("❌ Gagal segarkan index.")
 
@@ -238,7 +258,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_id = int(l_id_str)
         if l_id in listings_db:
             listings_db[l_id]['status'] = new_status
-            save_data()
             await update_index_page(context)
             
             group_msg_ids = listings_db[l_id].get('group_message_ids', [])
@@ -285,13 +304,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             listings_db.pop(l_id, None)
             await reindex_listings()
-            save_data()
             await update_index_page(context)
             await query.message.reply_text(f"✅ Listing dipadam dan ID telah disusun semula secara automatik!")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get('state')
-    print(f"💬 Mesej diterima dalam state: {state}")
 
     if state == 'WAITING_FOR_NEW_PRICE':
         if not update.message.text:
@@ -302,7 +319,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_id = context.user_data.get('editing_id')
         if l_id in listings_db:
             listings_db[l_id]['price'] = new_price
-            save_data()
             await update_index_page(context)
             
             group_msg_ids = listings_db[l_id].get('group_message_ids', [])
@@ -336,7 +352,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     elif state == 'WAITING_FOR_NEW_DESC':
-        # Boleh terima teks biasa ATAU kapsyen daripada gambar
         new_desc = None
         if update.message.text:
             new_desc = update.message.text.strip()
@@ -350,7 +365,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_id = context.user_data.get('editing_desc_id')
         if l_id in listings_db:
             listings_db[l_id]['desc'] = new_desc
-            save_data()
+            await update_index_page(context)
             
             group_msg_ids = listings_db[l_id].get('group_message_ids', [])
             if len(group_msg_ids) > 1:
@@ -463,7 +478,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         )
                         group_message_ids.append(desc_sent_msg.message_id)
 
-                        print("✅ Berjaya hantar media dan info penuh ke group!")
                     except Exception as e:
                         print(f"❌ Ralat hantar ke group: {e}")
                         await update.message.reply_text(f"❌ Ralat teknikal menghantar ke group: {e}")
@@ -478,11 +492,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "group_message_ids": group_message_ids
                     }
 
-                    save_data()
                     context.user_data.clear()
-
                     await update_index_page(context)
-                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan index dikemas kini!")
+                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan data di-backup ke channel!")
                 else:
                     await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
             else:
@@ -498,8 +510,9 @@ def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
     server_thread.start()
 
-    load_data()
     app = Application.builder().token(API_TOKEN).build()
+    app.post_init = load_data_from_channel
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.PHOTO | filters.TEXT & ~filters.COMMAND, handle_message))
