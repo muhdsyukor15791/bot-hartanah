@@ -3,7 +3,6 @@ import json
 import os
 import io
 import threading
-import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -19,9 +18,14 @@ from telegram.ext import (
 
 # -------------------------------------------------------------
 # Tetapkan di Render > Environment: TELEGRAM_BOT_TOKEN, GROUP_CHAT_ID, BACKUP_CHANNEL_ID
-API_TOKEN ="8924536875:AAHblyq6_3UpoEKSkFs4PzON4Bn2Kwp3v8s"
+API_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8924536875:AAHiCoNNZaxMO8Ud2Xozvsbef3oRD8VfBy8").strip()
 GROUP_CHAT_ID = int(os.environ.get("GROUP_CHAT_ID", "-1003288686118"))
-BACKUP_CHANNEL_ID = int(os.environ.get("BACKUP_CHANNEL_ID", "-5119617442"))
+
+# Memastikan BACKUP_CHANNEL_ID wajib disemak/ditetapkan dengan betul
+backup_channel_env = os.environ.get("BACKUP_CHANNEL_ID", "-5119617442")
+if not backup_channel_env:
+    raise RuntimeError("BACKUP_CHANNEL_ID belum ditetapkan dalam Environment Variables.")
+BACKUP_CHANNEL_ID = int(backup_channel_env)
 
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
@@ -31,6 +35,7 @@ pinned_index_message_id = None
 restore_completed = False
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger("BotHartanah")
 
 # --- SERVER WEB MINI UNTUK RENDER PORT BINDING ---
 class SimpleHandler(BaseHTTPRequestHandler):
@@ -46,8 +51,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        # Kurangkan log health-check yang tidak penting.
-        logging.debug("Health check: " + format, *args)
+        logger.debug("Health check: " + format, *args)
 
 def run_web_server():
     port = int(os.environ.get("PORT", 10000))
@@ -55,20 +59,23 @@ def run_web_server():
     server.serve_forever()
 # -------------------------------------------------
 
+# Pengesahan fail backup yang ketat (_decode_backup_bytes)
 def _decode_backup_bytes(file_bytes: bytes):
     """Decode dan validate backup tanpa mengubah database aktif dahulu.
-
-    Menyokong format semasa {"listings": {...}} dan format lama yang
-    menyimpan dictionary listing secara terus.
+    Memastikan fail ialah JSON yang sah, mengandungi listings, dan setiap rekod sah.
     """
-    data = json.loads(file_bytes.decode("utf-8-sig"))
+    try:
+        data = json.loads(file_bytes.decode("utf-8-sig"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Fail bukan JSON yang sah: {e}")
+
     if not isinstance(data, dict):
         raise ValueError("Format JSON tidak sah: root mesti object/dictionary.")
 
     if isinstance(data.get("listings"), dict):
         raw_listings = data["listings"]
     else:
-        # Keserasian dengan backup lama: {"1": {...}, "2": {...}}
+        # Keserasian dengan struktur lama
         raw_listings = {
             key: value for key, value in data.items()
             if str(key).isdigit() and isinstance(value, dict)
@@ -78,22 +85,34 @@ def _decode_backup_bytes(file_bytes: bytes):
 
     restored = {}
     for key, value in raw_listings.items():
-        listing_id = int(key)
+        try:
+            listing_id = int(key)
+        except ValueError:
+            raise ValueError(f"ID listing '{key}' bukan nombor sah.")
+
         if not isinstance(value, dict):
             raise ValueError(f"Rekod listing #{listing_id} bukan object.")
-        # Pastikan medan penting boleh digunakan oleh fungsi index.
-        if not value.get("title"):
-            raise ValueError(f"Rekod listing #{listing_id} tiada title.")
+        
+        title = value.get("title")
+        if not title or not isinstance(title, str) or not title.strip():
+            raise ValueError(f"Rekod listing #{listing_id} tiada title yang sah.")
+
+        # Menetapkan nilai default bagi field penting
         value.setdefault("price", "")
         value.setdefault("desc", "")
         value.setdefault("status", "ACTIVE")
         value.setdefault("photos", [])
         value.setdefault("group_message_ids", [])
+        
         restored[listing_id] = value
 
     pinned_id = data.get("pinned_index_message_id")
     if pinned_id is not None:
-        pinned_id = int(pinned_id)
+        try:
+            pinned_id = int(pinned_id)
+        except ValueError:
+            pinned_id = None
+
     return restored, pinned_id
 
 
@@ -111,7 +130,7 @@ async def _restore_from_pinned_backup(app: Application):
     if document is None:
         raise ValueError(
             f"Pinned message #{message.message_id} bukan dokumen. "
-            "Pastikan yang dipin ialah fail JSON backup, bukan mesej teks/index."
+            "Pastikan yang dipin ialah fail JSON backup."
         )
 
     filename = (document.file_name or "").strip()
@@ -120,56 +139,98 @@ async def _restore_from_pinned_backup(app: Application):
             f"Nama fail pinned ialah '{filename}', sepatutnya '{DB_FILE}'."
         )
 
-    print(
-        f"📌 Pinned backup dijumpai: message_id={message.message_id}, "
-        f"file={filename}, size={document.file_size} bytes"
-    )
+    logger.info(f"📌 Pinned backup dijumpai: message_id={message.message_id}, file={filename}")
     telegram_file = await document.get_file()
     file_bytes = await telegram_file.download_as_bytearray()
     restored, restored_pin_id = _decode_backup_bytes(bytes(file_bytes))
-    print(f"📥 JSON Telegram berjaya dimuat turun dan disahkan: {len(restored)} listing.")
+    logger.info(f"📥 JSON Telegram berjaya dimuat turun dan disahkan: {len(restored)} listing.")
     return restored, restored_pin_id
 
 
+# Sistem pemulihan semasa Render startup & Refresh Index
 async def load_data_from_channel(app: Application):
-    """Restore dari pinned Telegram JSON; fallback ke local JSON jika perlu."""
+    """Restore dari fail tempatan / pinned Telegram JSON dengan log terperinci."""
     global listings_db, pinned_index_message_id, restore_completed
     restore_completed = False
-    print("🔄 STARTUP RESTORE: mula memulihkan data listing...")
-    print(f"ℹ️ BACKUP_CHANNEL_ID={BACKUP_CHANNEL_ID}")
+    
+    logger.info("[STARTUP] Bot sedang dimulakan.")
+    logger.info("[RESTORE] Memeriksa database tempatan.")
 
-    try:
-        restored, restored_pin_id = await _restore_from_pinned_backup(app)
-        # Tukar database hanya selepas JSON lengkap berjaya disahkan.
-        listings_db = restored
-        pinned_index_message_id = restored_pin_id
-        print(f"✅ RESTORE BERJAYA dari Telegram: {len(listings_db)} listing.")
-        restore_completed = True
-        save_data()
-        return
-    except Exception as telegram_error:
-        print(f"❌ RESTORE TELEGRAM GAGAL: {type(telegram_error).__name__}: {telegram_error}")
-
+    # 1. Cuba baca fail tempatan terlebih dahulu
     try:
         if os.path.exists(DB_FILE):
             with open(DB_FILE, "rb") as f:
                 restored, restored_pin_id = _decode_backup_bytes(f.read())
+            if restored:
+                listings_db = restored
+                pinned_index_message_id = restored_pin_id
+                restore_completed = True
+                logger.info(f"[RESTORE] Database tempatan sah dijumpai: {len(listings_db)} listing dipulihkan.")
+                logger.info("[STARTUP] Sistem sedia digunakan.")
+                return
+    except Exception as local_error:
+        logger.warning(f"[RESTORE] Fail tempatan rosak/tidak sah: {local_error}")
+
+    logger.info("[RESTORE] Database tempatan kosong atau tidak sah.")
+    logger.info("[RESTORE] Cuba mendapatkan backup Telegram.")
+
+    # 2. Jika fail tempatan tiada/rosak, cuba restore dari Telegram Pinned Backup
+    try:
+        restored, restored_pin_id = await _restore_from_pinned_backup(app)
+        if restored:
             listings_db = restored
             pinned_index_message_id = restored_pin_id
-            print(f"✅ RESTORE BERJAYA dari fail tempatan: {len(listings_db)} listing.")
             restore_completed = True
+            save_data()
+            logger.info(f"[RESTORE] Backup Telegram berjaya dibaca.")
+            logger.info(f"[RESTORE] {len(listings_db)} listing berjaya dipulihkan.")
+            logger.info("[STARTUP] Sistem sedia digunakan.")
             return
-        print("ℹ️ Fail JSON tempatan tidak wujud (normal untuk filesystem ephemeral Render).")
-    except Exception as local_error:
-        print(f"❌ RESTORE FAIL TEMPATAN GAGAL: {type(local_error).__name__}: {local_error}")
+    except Exception as telegram_error:
+        logger.error(f"[RESTORE] Backup Telegram gagal dibaca (butiran disembunyikan atas faktor keselamatan token/kredensial).")
 
-    # Jangan overwrite/publish backup kosong secara automatik apabila restore gagal.
+    # 3. Jika kedua-duanya gagal
     listings_db = {}
     restore_completed = False
-    print("🛑 TIADA BACKUP DIPULIHKAN. Bot bermula dengan database kosong; jangan tambah/backup listing sebelum semak punca.")
+    logger.error("🛑 [RESTORE] Kedua-dua pemulihan gagal. Bot bermula dengan database kosong.")
+    logger.info("[STARTUP] Sistem sedia digunakan (Keadaan kosong).")
+
+
+async def refresh_index_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    global listings_db, restore_completed
+
+    if listings_db:
+        logger.info("Refresh Index: Database memori mempunyai data. Teruskan proses refresh.")
+    else:
+        logger.info("Refresh Index: Database kosong. Cuba dapatkan backup daripada Telegram...")
+        try:
+            restored, restored_pin_id = await _restore_from_pinned_backup(context.application)
+            if restored:
+                listings_db = restored
+                global pinned_index_message_id
+                pinned_index_message_id = restored_pin_id
+                restore_completed = True
+                save_data()
+                logger.info(f"Refresh Index: Berjaya pulihkan {len(listings_db)} listing daripada Telegram.")
+                await query.message.reply_text(f"✅ Berjaya memulihkan {len(listings_db)} listing daripada backup Telegram.")
+            else:
+                raise ValueError("Backup kosong.")
+        except Exception as e:
+            logger.error(f"Refresh Index Gagal.")
+            await query.message.reply_text(f"❌ Kegagalan Pemulihan: Backup Telegram gagal dibaca. Index kosong tidak diterbitkan.")
+            return
+
+    success = await update_index_page(context)
+    if success:
+        await query.message.reply_text(f"✅ Index berjaya disegarkan! Jumlah listing aktif: {len(listings_db)}")
+    else:
+        await query.message.reply_text("❌ Gagal membina semula Index Page.")
+
 
 def save_data():
-    """Simpan secara atomik supaya fail tidak separuh ditulis jika proses terhenti."""
     temp_file = DB_FILE + ".tmp"
     try:
         payload = {
@@ -183,9 +244,9 @@ def save_data():
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_file, DB_FILE)
-        print("💾 Data disimpan ke fail tempatan JSON.")
+        logger.info("💾 Data disimpan ke fail tempatan JSON.")
     except Exception as e:
-        print(f"⚠️ Gagal simpan data tempatan: {e}")
+        logger.error(f"⚠️ Gagal simpan data tempatan.")
         try:
             if os.path.exists(temp_file):
                 os.remove(temp_file)
@@ -194,15 +255,16 @@ def save_data():
 
 
 async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
-    """Hantar snapshot JSON dan pin mesej backup terbaru untuk proses restore."""
     if not listings_db:
-        print("🛑 BACKUP DIBATALKAN: listings_db kosong. Ini mengelakkan backup kosong menimpa backup lama.")
+        logger.warning("🛑 BACKUP DIBATALKAN: listings_db kosong. Elakkan backup kosong.")
         return False
+    
     save_data()
     try:
         payload = {
             "version": 1,
             "saved_at": datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).isoformat(),
+            "total_listings": len(listings_db),
             "listings": listings_db,
             "pinned_index_message_id": pinned_index_message_id,
         }
@@ -210,22 +272,46 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         file_doc = io.BytesIO(data_to_send)
         file_doc.name = DB_FILE
 
+        chat = await context.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
+        old_pinned_message = getattr(chat, "pinned_message", None)
+        old_pinned_id = old_pinned_message.message_id if old_pinned_message else None
+
         sent_backup = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
-            caption=f"Auto-backup listing terkini | {payload['saved_at']}"
+            caption=(
+                f"🛡️ **AUTO-BACKUP SYSTEM**\n"
+                f"📅 Tarikh: {payload['saved_at']}\n"
+                f"📊 Jumlah Listing: {len(listings_db)}\n"
+                f"⚙️ Versi Struktur: {payload['version']}"
+            ),
+            parse_mode="Markdown"
         )
 
-        # Pinned message ialah rujukan stabil untuk restore semasa Render startup.
+        if not sent_backup or not sent_backup.message_id:
+            logger.error("⚠️ Gagal menghantar dokumen backup ke channel Telegram.")
+            return False
+
         await context.bot.pin_chat_message(
             chat_id=BACKUP_CHANNEL_ID,
             message_id=sent_backup.message_id,
             disable_notification=True,
         )
-        print(f"☁️ BACKUP OK: {len(listings_db)} listing dihantar dan dipin (message_id={sent_backup.message_id}).")
+        logger.info(f"☁️ BACKUP OK: Mesej #{sent_backup.message_id} berjaya dihantar dan dipin.")
+
+        if old_pinned_id and old_pinned_id != sent_backup.message_id:
+            try:
+                await context.bot.unpin_chat_message(
+                    chat_id=BACKUP_CHANNEL_ID,
+                    message_id=old_pinned_id
+                )
+                logger.info(f"🗑️ Backup lama (#{old_pinned_id}) berjaya dinyahpin.")
+            except Exception as unpin_err:
+                logger.warning(f"⚠️ Gagal unpin backup lama.")
+
         return True
     except Exception as e:
-        print(f"⚠️ Gagal backup/pin ke Telegram Channel: {e}")
+        logger.error(f"⚠️ Gagal proses backup ke Telegram Channel.")
         return False
 
 def get_next_listing_id():
@@ -242,15 +328,17 @@ async def reindex_listings():
     listings_db = new_db
 
 async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
-    global pinned_index_message_id
-    
-    # Dapatkan masa semasa mengikut zon masa Malaysia (Kuala Lumpur)
+    global pinned_index_message_id, restore_completed
+
+    if not listings_db and not restore_completed:
+        logger.error("Database kosong dan restore belum berjaya. Index kosong tidak diterbitkan.")
+        return False
+
     try:
         malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
         current_time = datetime.now(malaysia_tz).strftime('%d/%m/%Y %I:%M %p')
     except Exception:
-        malaysia_time = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Kuala_Lumpur"))
-        current_time = malaysia_time.strftime('%d/%m/%Y %I:%M %p')
+        current_time = datetime.utcnow().strftime('%d/%m/%Y %I:%M %p')
 
     index_text = f"🏠 **SENARAI UTAMA LISTING HARTANAH** 🏠\n🕒 *Last Updated: {current_time}*\n\n"
 
@@ -273,7 +361,6 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 clean_chat_id = str(GROUP_CHAT_ID).replace("-100", "")
                 link_text = f"https://t.me/c/{clean_chat_id}/{first_msg_id}"
 
-            # Elakkan ralat jika field price kosong
             price_display = data.get('price', '')
             price_line = f"   {price_display}\n" if price_display else ""
 
@@ -287,7 +374,6 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     try:
         old_pinned_id = pinned_index_message_id
 
-        # Hantar mesej index baru
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -298,16 +384,14 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         save_data()
         await backup_to_channel(context)
         
-        # Pin mesej index baru
         try:
             await context.bot.pin_chat_message(
                 chat_id=GROUP_CHAT_ID,
                 message_id=pinned_index_message_id
             )
         except Exception as e:
-            print(f"⚠️ Nota pin mesej index: {e}")
+            logger.warning(f"Nota pin mesej index.")
 
-        # Unpin dan padam mesej index lama
         if old_pinned_id and old_pinned_id != pinned_index_message_id:
             try:
                 await context.bot.unpin_chat_message(
@@ -319,11 +403,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                     message_id=old_pinned_id
                 )
             except Exception as unpin_err:
-                print(f"⚠️ Nota unpin/padam index lama: {unpin_err}")
+                logger.warning(f"Nota unpin/padam index lama.")
 
         return True
     except Exception as e:
-        print(f"❌ Ralat kritikal kemaskini index: {e}")
+        logger.error(f"❌ Ralat kritikal kemaskini index.")
         return False
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -357,11 +441,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Sila hantar gambar-gambar hartanah berserta **kapsyen (minima 3 baris)** pada gambar pertama, kemudian taip **DONE**."
         )
     elif data == "refresh_index":
-        success = await update_index_page(context)
-        if success:
-            await query.message.reply_text("✅ Index berjaya disegarkan & data di-backup!")
-        else:
-            await query.message.reply_text("❌ Gagal segarkan index.")
+        await refresh_index_handler(update, context)
 
     elif data == "edit_price_menu":
         if not listings_db:
@@ -387,7 +467,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         l_id = int(data.split("_")[1])
         context.user_data['editing_desc_id'] = l_id
         context.user_data['state'] = 'WAITING_FOR_NEW_DESC'
-        await query.message.reply_text(f"📝 Sila hantar **description baru** (melalui teks biasa ATAU kapsyen gambar) untuk Listing #{l_id}:")
+        await query.message.reply_text(f"📝 Sila hantar **description baru** untuk Listing #{l_id}:")
 
     elif data == "set_status":
         if not listings_db:
@@ -436,9 +516,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         **read_opts
                     )
                 except Exception as e:
-                    print(f"⚠️ Gagal edit mesej group: {e}")
+                    logger.warning(f"⚠️ Gagal edit mesej group.")
 
-            await query.message.reply_text(f"✅ Status Listing #{l_id} telah ditukar kepada {new_status} dan dikemaskini di group!")
+            await query.message.reply_text(f"✅ Status Listing #{l_id} ditukar kepada {new_status}!")
 
     elif data == "delete_listing":
         if not listings_db:
@@ -450,16 +530,27 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("del_"):
         l_id = int(data.split("_")[1])
         if l_id in listings_db:
-            for msg_id in listings_db[l_id].get('group_message_ids', []):
-                try:
-                    await context.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg_id)
-                except:
-                    pass
+            backup_before_delete = listings_db.copy()
             
-            listings_db.pop(l_id, None)
-            await reindex_listings()
-            await update_index_page(context)
-            await query.message.reply_text(f"✅ Listing dipadam dan ID telah disusun semula secara automatik!")
+            try:
+                for msg_id in listings_db[l_id].get('group_message_ids', []):
+                    try:
+                        await context.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg_id)
+                    except:
+                        pass
+                
+                listings_db.pop(l_id, None)
+                await reindex_listings()
+                
+                success = await update_index_page(context)
+                if not success:
+                    raise RuntimeError("Kemaskini index gagal selepas padam.")
+
+                await query.message.reply_text(f"✅ Listing #{l_id} dipadam dan ID disusun semula!")
+            except Exception as e:
+                logger.error(f"❌ Ralat semasa memadam listing, memulihkan database asal.")
+                listings_db = backup_before_delete
+                await query.message.reply_text("❌ Ralat berlaku semasa kemas kini. Tindakan dipadam dibatalkan demi keselamatan data.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get('state')
@@ -500,10 +591,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         **read_opts
                     )
                 except Exception as e:
-                    print(f"⚠️ Gagal edit mesej harga di group: {e}")
+                    logger.warning(f"⚠️ Gagal edit mesej harga di group.")
 
             context.user_data.clear()
-            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini di bot dan di dalam group!")
+            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini!")
         return
 
     elif state == 'WAITING_FOR_NEW_DESC':
@@ -514,7 +605,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             new_desc = update.message.caption.strip()
 
         if not new_desc:
-            await update.message.reply_text("⚠️ Tiada teks atau kapsyen dikesan. Sila hantar teks atau gambar berserta kapsyen.")
+            await update.message.reply_text("⚠️ Tiada teks atau kapsyen dikesan.")
             return
 
         l_id = context.user_data.get('editing_desc_id')
@@ -547,10 +638,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         **read_opts
                     )
                 except Exception as e:
-                    print(f"⚠️ Gagal edit mesej description di group: {e}")
+                    logger.warning(f"⚠️ Gagal edit description di group.")
 
             context.user_data.clear()
-            await update.message.reply_text(f"✅ Description Listing #{l_id} berjaya dikemaskini secara live di group!")
+            await update.message.reply_text(f"✅ Description Listing #{l_id} dikemaskini!")
         return
 
     elif state == 'WAITING_FOR_LISTING_PHOTOS':
@@ -575,11 +666,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption_text = context.user_data.get('temp_caption', '')
 
                 if not photos:
-                    await update.message.reply_text("⚠️ Tiada gambar dikesan. Sila hantar sekurang-kurangnya satu gambar.")
+                    await update.message.reply_text("⚠️ Tiada gambar dikesan.")
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen.")
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama mempunyai kapsyen.")
                     return
 
                 lines = caption_text.split('\n')
@@ -635,8 +726,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         group_message_ids.append(desc_sent_msg.message_id)
 
                     except Exception as e:
-                        print(f"❌ Ralat hantar ke group: {e}")
-                        await update.message.reply_text(f"❌ Ralat teknikal menghantar ke group: {e}")
+                        logger.error(f"❌ Ralat hantar ke group.")
+                        await update.message.reply_text(f"❌ Ralat teknikal berlaku.")
                         return
 
                     listings_db[saved_id] = {
@@ -650,7 +741,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     context.user_data.clear()
                     await update_index_page(context)
-                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan data di-backup ke channel!")
+                    await update.message.reply_text(f"✅ Listing #{saved_id} berjaya disimpan dan di-backup!")
                 else:
                     await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
             else:
@@ -658,18 +749,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     context.user_data['temp_caption'] = update.message.text
                     await update.message.reply_text("📝 Kapsyen diterima! Sekarang hantar gambar atau taip **DONE**.")
                 else:
-                    await update.message.reply_text("Sila hantar gambar seterusnya atau taip **DONE** untuk selesai.")
+                    await update.message.reply_text("Sila hantar gambar seterusnya atau taip **DONE**.")
     else:
         await update.message.reply_text("Sila hantar /start untuk membuka semula menu utama.")
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     error = context.error
-    print(f"❌ BOT ERROR: {type(error).__name__}: {error}")
+    logger.error(f"❌ BOT ERROR: {type(error).__name__}")
     try:
         from telegram.error import Conflict
         if isinstance(error, Conflict):
-            print("🛑 TELEGRAM 409 CONFLICT: Lebih daripada satu proses/service sedang polling menggunakan token ini. Pastikan hanya SATU Render service/instance menjalankan bot ini; hentikan service lama/worker pendua.")
+            logger.critical(
+                "🛑 TELEGRAM 409 CONFLICT: Lebih daripada satu instance bot sedang aktif menggunakan token yang sama! "
+                "Sila pastikan tiada bot berjalan secara lokal dan pastikan Render hanya menjalankan SATU instance."
+            )
     except Exception:
         pass
 
@@ -678,7 +772,7 @@ def main():
     server_thread.start()
 
     if not API_TOKEN:
-        raise RuntimeError("TELEGRAM_BOT_TOKEN belum ditetapkan dalam Environment Variables Render.")
+        raise RuntimeError("TELEGRAM_BOT_TOKEN belum ditetapkan dalam Environment Variables.")
 
     app = Application.builder().token(API_TOKEN).post_init(load_data_from_channel).build()
 
@@ -687,8 +781,7 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO | filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_error_handler(error_handler)
 
-    print("Bot Hartanah sedang berjalan. Pastikan hanya satu instance menggunakan token ini.")
-    # Jangan jalankan lebih daripada satu Render service/instance dengan token sama.
+    logger.info("Bot Hartanah sedang berjalan.")
     app.run_polling(drop_pending_updates=False)
 
 if __name__ == '__main__':
