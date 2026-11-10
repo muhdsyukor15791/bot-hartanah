@@ -3,6 +3,7 @@ import json
 import os
 import io
 import threading
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -18,7 +19,7 @@ from telegram.ext import (
 
 # -------------------------------------------------------------
 # Tetapkan di Render > Environment: TELEGRAM_BOT_TOKEN, GROUP_CHAT_ID, BACKUP_CHANNEL_ID
-API_TOKEN = "8924536875:AAHblyq6_3UpoEKSkFs4PzON4Bn2Kwp3v8s"
+API_TOKEN ="8924536875:AAHblyq6_3UpoEKSkFs4PzON4Bn2Kwp3v8s"
 GROUP_CHAT_ID = int(os.environ.get("GROUP_CHAT_ID", "-1003288686118"))
 BACKUP_CHANNEL_ID = int(os.environ.get("BACKUP_CHANNEL_ID", "-5119617442"))
 
@@ -27,6 +28,7 @@ DB_FILE = 'listings_data.json'
 
 listings_db = {}
 pinned_index_message_id = None
+restore_completed = False
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -34,8 +36,18 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.end_headers()
         self.wfile.write(b"Bot Hartanah is alive!")
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.end_headers()
+
+    def log_message(self, format, *args):
+        # Kurangkan log health-check yang tidak penting.
+        logging.debug("Health check: " + format, *args)
 
 def run_web_server():
     port = int(os.environ.get("PORT", 10000))
@@ -44,16 +56,39 @@ def run_web_server():
 # -------------------------------------------------
 
 def _decode_backup_bytes(file_bytes: bytes):
-    """Validate and decode a backup before changing the live database."""
-    data = json.loads(file_bytes.decode("utf-8"))
-    if not isinstance(data, dict) or not isinstance(data.get("listings"), dict):
-        raise ValueError("Format JSON tidak sah: medan 'listings' tiada atau bukan object.")
+    """Decode dan validate backup tanpa mengubah database aktif dahulu.
+
+    Menyokong format semasa {"listings": {...}} dan format lama yang
+    menyimpan dictionary listing secara terus.
+    """
+    data = json.loads(file_bytes.decode("utf-8-sig"))
+    if not isinstance(data, dict):
+        raise ValueError("Format JSON tidak sah: root mesti object/dictionary.")
+
+    if isinstance(data.get("listings"), dict):
+        raw_listings = data["listings"]
+    else:
+        # Keserasian dengan backup lama: {"1": {...}, "2": {...}}
+        raw_listings = {
+            key: value for key, value in data.items()
+            if str(key).isdigit() and isinstance(value, dict)
+        }
+        if not raw_listings:
+            raise ValueError("JSON tiada medan 'listings' atau rekod listing bernombor.")
 
     restored = {}
-    for key, value in data["listings"].items():
+    for key, value in raw_listings.items():
         listing_id = int(key)
         if not isinstance(value, dict):
-            raise ValueError(f"Rekod listing #{listing_id} tidak sah.")
+            raise ValueError(f"Rekod listing #{listing_id} bukan object.")
+        # Pastikan medan penting boleh digunakan oleh fungsi index.
+        if not value.get("title"):
+            raise ValueError(f"Rekod listing #{listing_id} tiada title.")
+        value.setdefault("price", "")
+        value.setdefault("desc", "")
+        value.setdefault("status", "ACTIVE")
+        value.setdefault("photos", [])
+        value.setdefault("group_message_ids", [])
         restored[listing_id] = value
 
     pinned_id = data.get("pinned_index_message_id")
@@ -63,49 +98,75 @@ def _decode_backup_bytes(file_bytes: bytes):
 
 
 async def _restore_from_pinned_backup(app: Application):
-    """Bot API tidak boleh menyenaraikan sejarah channel; ambil pinned message."""
+    """Dapatkan dokumen JSON daripada pinned message di Backup Channel."""
     chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
     message = getattr(chat, "pinned_message", None)
     if message is None:
-        raise FileNotFoundError("Tiada mesej backup yang dipin dalam Backup Channel.")
-    document = getattr(message, "document", None)
-    if document is None or not (document.file_name or "").endswith(DB_FILE):
-        raise ValueError("Pinned message bukan fail listings_data.json.")
+        raise FileNotFoundError(
+            f"Channel {BACKUP_CHANNEL_ID} tiada pinned message. "
+            "Pin fail listings_data.json yang betul dahulu."
+        )
 
+    document = getattr(message, "document", None)
+    if document is None:
+        raise ValueError(
+            f"Pinned message #{message.message_id} bukan dokumen. "
+            "Pastikan yang dipin ialah fail JSON backup, bukan mesej teks/index."
+        )
+
+    filename = (document.file_name or "").strip()
+    if filename.lower() != DB_FILE.lower():
+        raise ValueError(
+            f"Nama fail pinned ialah '{filename}', sepatutnya '{DB_FILE}'."
+        )
+
+    print(
+        f"📌 Pinned backup dijumpai: message_id={message.message_id}, "
+        f"file={filename}, size={document.file_size} bytes"
+    )
     telegram_file = await document.get_file()
     file_bytes = await telegram_file.download_as_bytearray()
-    return _decode_backup_bytes(bytes(file_bytes))
+    restored, restored_pin_id = _decode_backup_bytes(bytes(file_bytes))
+    print(f"📥 JSON Telegram berjaya dimuat turun dan disahkan: {len(restored)} listing.")
+    return restored, restored_pin_id
 
 
 async def load_data_from_channel(app: Application):
-    """Restore Telegram pinned JSON dahulu, kemudian fallback ke local JSON."""
-    global listings_db, pinned_index_message_id
-    print("🔄 Memulihkan data listing...")
+    """Restore dari pinned Telegram JSON; fallback ke local JSON jika perlu."""
+    global listings_db, pinned_index_message_id, restore_completed
+    restore_completed = False
+    print("🔄 STARTUP RESTORE: mula memulihkan data listing...")
+    print(f"ℹ️ BACKUP_CHANNEL_ID={BACKUP_CHANNEL_ID}")
 
     try:
         restored, restored_pin_id = await _restore_from_pinned_backup(app)
+        # Tukar database hanya selepas JSON lengkap berjaya disahkan.
         listings_db = restored
         pinned_index_message_id = restored_pin_id
-        print(f"✅ Restore Telegram berjaya: {len(listings_db)} listing.")
+        print(f"✅ RESTORE BERJAYA dari Telegram: {len(listings_db)} listing.")
+        restore_completed = True
         save_data()
         return
     except Exception as telegram_error:
-        print(f"⚠️ Restore Telegram tidak berjaya: {telegram_error}")
+        print(f"❌ RESTORE TELEGRAM GAGAL: {type(telegram_error).__name__}: {telegram_error}")
 
-    # Fallback local: jangan kosongkan database jika fail tiada/rosak.
     try:
         if os.path.exists(DB_FILE):
             with open(DB_FILE, "rb") as f:
                 restored, restored_pin_id = _decode_backup_bytes(f.read())
             listings_db = restored
             pinned_index_message_id = restored_pin_id
-            print(f"✅ Restore fail tempatan berjaya: {len(listings_db)} listing.")
+            print(f"✅ RESTORE BERJAYA dari fail tempatan: {len(listings_db)} listing.")
+            restore_completed = True
             return
+        print("ℹ️ Fail JSON tempatan tidak wujud (normal untuk filesystem ephemeral Render).")
     except Exception as local_error:
-        print(f"⚠️ Fail tempatan tidak dapat dibaca: {local_error}")
+        print(f"❌ RESTORE FAIL TEMPATAN GAGAL: {type(local_error).__name__}: {local_error}")
 
-    print("⚠️ Tiada backup yang boleh dipulihkan. Database sedia ada tidak akan dipadam.")
-
+    # Jangan overwrite/publish backup kosong secara automatik apabila restore gagal.
+    listings_db = {}
+    restore_completed = False
+    print("🛑 TIADA BACKUP DIPULIHKAN. Bot bermula dengan database kosong; jangan tambah/backup listing sebelum semak punca.")
 
 def save_data():
     """Simpan secara atomik supaya fail tidak separuh ditulis jika proses terhenti."""
@@ -134,6 +195,9 @@ def save_data():
 
 async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
     """Hantar snapshot JSON dan pin mesej backup terbaru untuk proses restore."""
+    if not listings_db:
+        print("🛑 BACKUP DIBATALKAN: listings_db kosong. Ini mengelakkan backup kosong menimpa backup lama.")
+        return False
     save_data()
     try:
         payload = {
@@ -158,7 +222,7 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             message_id=sent_backup.message_id,
             disable_notification=True,
         )
-        print(f"☁️ Backup berjaya dihantar dan dipin (message_id={sent_backup.message_id}).")
+        print(f"☁️ BACKUP OK: {len(listings_db)} listing dihantar dan dipin (message_id={sent_backup.message_id}).")
         return True
     except Exception as e:
         print(f"⚠️ Gagal backup/pin ke Telegram Channel: {e}")
@@ -598,6 +662,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Sila hantar /start untuk membuka semula menu utama.")
 
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    error = context.error
+    print(f"❌ BOT ERROR: {type(error).__name__}: {error}")
+    try:
+        from telegram.error import Conflict
+        if isinstance(error, Conflict):
+            print("🛑 TELEGRAM 409 CONFLICT: Lebih daripada satu proses/service sedang polling menggunakan token ini. Pastikan hanya SATU Render service/instance menjalankan bot ini; hentikan service lama/worker pendua.")
+    except Exception:
+        pass
+
 def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
     server_thread.start()
@@ -610,9 +685,11 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.PHOTO | filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_error_handler(error_handler)
 
-    print("Bot Hartanah sedang berjalan...")
-    app.run_polling()
+    print("Bot Hartanah sedang berjalan. Pastikan hanya satu instance menggunakan token ini.")
+    # Jangan jalankan lebih daripada satu Render service/instance dengan token sama.
+    app.run_polling(drop_pending_updates=False)
 
 if __name__ == '__main__':
     main()
