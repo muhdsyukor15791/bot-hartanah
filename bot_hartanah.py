@@ -113,17 +113,14 @@ async def _restore_from_pinned_backup(app: Application):
     chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
     message = getattr(chat, "pinned_message", None)
     if message is None:
-        logger.error(f"❌ Pinned Error: Channel {BACKUP_CHANNEL_ID} tiada pinned message langsung.")
         raise FileNotFoundError(f"Channel {BACKUP_CHANNEL_ID} tiada pinned message.")
 
     document = getattr(message, "document", None)
     if document is None:
-        logger.error(f"❌ Pinned Error: Mesej #{message.message_id} yang dipin bukan dokumen fail.")
         raise ValueError(f"Pinned message #{message.message_id} bukan dokumen.")
 
     filename = (document.file_name or "").strip()
     if filename.lower() != DB_FILE.lower():
-        logger.error(f"❌ Pinned Error: Nama fail dipin ialah '{filename}', sepatutnya '{DB_FILE}'.")
         raise ValueError(f"Nama fail pinned ialah '{filename}', sepatutnya '{DB_FILE}'.")
 
     logger.info(f"📌 Pinned backup dijumpai: message_id={message.message_id}, file={filename}")
@@ -256,15 +253,17 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         old_pinned_message = getattr(chat, "pinned_message", None)
         old_pinned_id = old_pinned_message.message_id if old_pinned_message else None
 
+        # Kapsyen ringkas tanpa sebarang emoji supaya mudah dibaca dan tidak mengelirukan bot
+        simple_caption = (
+            f"Auto-Backup Listing Data (Terkini)\n"
+            f"Tarikh: {payload['saved_at']}\n"
+            f"Jumlah Listing: {len(listings_db)}"
+        )
+
         sent_backup = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
-            caption=(
-                f"🛡️ **AUTO-BACKUP SYSTEM**\n"
-                f"📅 Tarikh: {payload['saved_at']}\n"
-                f"📊 Jumlah Listing: {len(listings_db)}"
-            ),
-            parse_mode="Markdown"
+            caption=simple_caption
         )
 
         if not sent_backup or not sent_backup.message_id:
