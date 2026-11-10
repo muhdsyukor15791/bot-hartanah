@@ -45,30 +45,33 @@ def run_web_server():
 async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
-        # 1. Cuba muat turun fail backup terkini terus dari Private Telegram Channel
         print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
-        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=10):
-            if message.document and message.document.file_name == DB_FILE:
-                file = await message.document.get_file()
-                file_bytes = await file.download_as_bytearray()
-                
-                data = json.loads(file_bytes.decode('utf-8'))
-                raw_listings = data.get('listings', {})
-                listings_db = {int(k): v for k, v in raw_listings.items()}
-                pinned_index_message_id = data.get('pinned_index_message_id')
-                
-                print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
-                return
+        # Semak sehingga 50 mesej ke belakang untuk pastikan fail JSON dijumpai
+        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=50):
+            if message.document:
+                if message.document.file_name and DB_FILE in message.document.file_name:
+                    file = await message.document.get_file()
+                    file_bytes = await file.download_as_bytearray()
+                    
+                    data = json.loads(file_bytes.decode('utf-8'))
+                    raw_listings = data.get('listings', {})
+                    
+                    if raw_listings:  # Pastikan data di dalam JSON tidak kosong
+                        listings_db = {int(k): v for k, v in raw_listings.items()}
+                        pinned_index_message_id = data.get('pinned_index_message_id')
+                        print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
+                        return
 
-        # 2. Jika tiada di channel, cuba baca fail tempatan (jika ada)
+        # Fallback ke fail tempatan jika ada
         if os.path.exists(DB_FILE):
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
                 raw_listings = data.get('listings', {})
-                listings_db = {int(k): v for k, v in raw_listings.items()}
-                pinned_index_message_id = data.get('pinned_index_message_id')
-                print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
-                return
+                if raw_listings:
+                    listings_db = {int(k): v for k, v in raw_listings.items()}
+                    pinned_index_message_id = data.get('pinned_index_message_id')
+                    print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
+                    return
 
         print("⚠️ Tiada data ditemui, memulakan pangkalan data kosong.")
         listings_db = {}
