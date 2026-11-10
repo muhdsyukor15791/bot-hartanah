@@ -3,6 +3,8 @@ import json
 import os
 import io
 import threading
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -41,7 +43,6 @@ def run_web_server():
 # -------------------------------------------------
 
 async def load_data_from_channel(app: Application):
-    """Membaca data JSON tempatan atau dari backup."""
     global listings_db, pinned_index_message_id
     try:
         if os.path.exists(DB_FILE):
@@ -60,7 +61,6 @@ async def load_data_from_channel(app: Application):
         listings_db = {}
 
 def save_data():
-    """Menyimpan data ke fail tempatan JSON."""
     try:
         with open(DB_FILE, 'w') as f:
             json.dump({
@@ -72,7 +72,6 @@ def save_data():
         print(f"⚠️ Gagal simpan data tempatan: {e}")
 
 async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
-    """Menghantar fail backup listings_data.json terus ke Private Channel secara senyap."""
     save_data()
     try:
         data_to_send = json.dumps({
@@ -107,7 +106,15 @@ async def reindex_listings():
 
 async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     global pinned_index_message_id
-    index_text = "🏠 **SENARAI UTAMA LISTING HARTANAH** 🏠\n\n"
+    
+    # Dapatkan masa semasa mengikut zon masa Malaysia (Kuala Lumpur)
+    try:
+        malaysia_tz = ZoneInfo("Asia/Kuala_ Lumpur")
+    except:
+        malaysia_tz = None
+    current_time = datetime.now(malaysia_tz).strftime('%d/%m/%Y %I:%M %p') if malaysia_tz else datetime.now().strftime('%d/%m/%Y %I:%M %p')
+
+    index_text = f"🏠 **SENARAI UTAMA LISTING HARTANAH** 🏠\n🕒 *Last Updated: {current_time}*\n\n"
 
     if not listings_db:
         index_text += "⚠️ *Tiada listing aktif buat masa ini.*"
@@ -115,11 +122,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         for l_id in sorted(listings_db.keys()):
             data = listings_db[l_id]
             status_val = data.get('status', 'ACTIVE')
-            status_icon = "🟢"
+            status_str = ""
             if status_val == "BOOKED":
-                status_icon = "🟡 [BOOKED]"
+                status_str = " [BOOKED]"
             elif status_val == "SOLD":
-                status_icon = "🔴 [SOLD]"
+                status_str = " [SOLD]"
 
             group_msg_ids = data.get('group_message_ids', [])
             link_text = "Tiada pautan"
@@ -129,28 +136,16 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 link_text = f"https://t.me/c/{clean_chat_id}/{first_msg_id}"
 
             index_text += (
-                f"🔹 **ID #{l_id}** | {data['title']}\n"
-                f"   💰 {data['price']} {status_icon}\n"
+                f"🔹 **ID #{l_id}** | {data['title']}{status_str}\n"
+                f"   {data['price']}\n"
                 f"   🔗 {link_text}\n"
                 f"-----------------------------------\n"
             )
 
     try:
-        if pinned_index_message_id:
-            try:
-                await context.bot.edit_message_text(
-                    chat_id=GROUP_CHAT_ID,
-                    message_id=pinned_index_message_id,
-                    text=index_text,
-                    parse_mode="Markdown",
-                    disable_web_page_preview=True
-                )
-                await backup_to_channel(context)
-                return True
-            except Exception as edit_err:
-                print(f"⚠️ Tidak dapat edit mesej index lama: {edit_err}")
-                pinned_index_message_id = None
+        old_pinned_id = pinned_index_message_id
 
+        # Hantar mesej index baru setiap kali kemas kini
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -158,8 +153,10 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             disable_web_page_preview=True
         )
         pinned_index_message_id = sent_msg.message_id
+        save_data()
         await backup_to_channel(context)
         
+        # Pin mesej index yang baru
         try:
             await context.bot.pin_chat_message(
                 chat_id=GROUP_CHAT_ID,
@@ -167,6 +164,21 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             )
         except Exception as e:
             print(f"⚠️ Nota pin mesej index: {e}")
+
+        # Unpin mesej index yang lama (jika wujud)
+        if old_pinned_id and old_pinned_id != pinned_index_message_id:
+            try:
+                await context.bot.unpin_chat_message(
+                    chat_id=GROUP_CHAT_ID,
+                    message_id=old_pinned_id
+                )
+                # Padam mesej index lama dari group supaya tidak memenuhi ruang
+                await context.bot.delete_message(
+                    chat_id=GROUP_CHAT_ID,
+                    message_id=old_pinned_id
+                )
+            except Exception as unpin_err:
+                print(f"⚠️ Nota unpin/padam index lama: {unpin_err}")
 
         return True
     except Exception as e:
