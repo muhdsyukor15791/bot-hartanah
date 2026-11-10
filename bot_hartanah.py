@@ -3,7 +3,7 @@ import json
 import os
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from telegram import Update, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -190,12 +190,60 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text("⚠️ Tiada listing aktif.")
             return
         keyboard = [[InlineKeyboardButton(f"Edit #{l_id}: {d['title']}", callback_data=f"edit_{l_id}")] for l_id, d in listings_db.items()]
-        await query.message.reply_text("✏️ Pilih listing untuk dikemaskini:", reply_markup=InlineKeyboardMarkup(keyboard))
+        await query.message.reply_text("✏️ Pilih listing untuk dikemaskini harganya:", reply_markup=InlineKeyboardMarkup(keyboard))
     elif query.data.startswith("edit_"):
         l_id = int(query.data.split("_")[1])
         context.user_data['editing_id'] = l_id
         context.user_data['state'] = 'WAITING_FOR_NEW_PRICE'
         await query.message.reply_text(f"Sila taip harga baru untuk Listing #{l_id}:")
+    elif query.data == "set_status":
+        if not listings_db:
+            await query.message.reply_text("⚠️ Tiada listing aktif.")
+            return
+        keyboard = [[InlineKeyboardButton(f"Status #{l_id}: {d['title']}", callback_data=f"status_{l_id}")] for l_id, d in listings_db.items()]
+        await query.message.reply_text("🏷️ Pilih listing untuk dikemaskini status:", reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("status_"):
+        l_id = int(query.data.split("_")[1])
+        context.user_data['status_id'] = l_id
+        keyboard = [
+            [InlineKeyboardButton("🟢 ACTIVE", callback_data=f"setstat_{l_id}_ACTIVE")],
+            [InlineKeyboardButton("🟡 BOOKED", callback_data=f"setstat_{l_id}_BOOKED")],
+            [InlineKeyboardButton("🔴 SOLD", callback_data=f"setstat_{l_id}_SOLD")]
+        ]
+        await query.message.reply_text(f"Pilih status baru untuk Listing #{l_id}:", reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("setstat_"):
+        _, l_id_str, new_status = query.data.split("_")
+        l_id = int(l_id_str)
+        if l_id in listings_db:
+            listings_db[l_id]['status'] = new_status
+            save_data()
+            await update_index_page(context)
+            
+            # Kemaskini mesej teks fizikal di group jika ada
+            group_msg_ids = listings_db[l_id].get('group_message_ids', [])
+            if len(group_msg_ids) > 1:
+                desc_msg_id = group_msg_ids[-1]
+                data = listings_db[l_id]
+                updated_desc_message = (
+                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})** - *[{new_status}]*\n\n"
+                    f"📍 **{data['title']}**\n"
+                    f"💰 **{data['price']}**\n\n"
+                    f"{data['desc']}"
+                )
+                try:
+                    read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
+                    await context.bot.edit_message_text(
+                        chat_id=GROUP_CHAT_ID,
+                        message_id=desc_msg_id,
+                        text=updated_desc_message,
+                        parse_mode="Markdown",
+                        disable_web_page_preview=True,
+                        **read_opts
+                    )
+                except Exception as e:
+                    print(f"⚠️ Gagal edit mesej group: {e}")
+
+            await query.message.reply_text(f"✅ Status Listing #{l_id} telah ditukar kepada {new_status} dan dikemaskini di group!")
     elif query.data == "delete_listing":
         if not listings_db:
             await query.message.reply_text("⚠️ Tiada listing aktif.")
@@ -272,7 +320,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     group_message_ids = []
                     try:
-                        # Tetapkan read_timeout dan write_timeout yang tinggi (60 saat) untuk elakkan timeout
                         read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
 
                         if len(photos) > 1:
@@ -340,9 +387,34 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             listings_db[l_id]['price'] = new_price
             save_data()
             await update_index_page(context)
+            
+            # Kemaskini mesej teks fizikal di group secara live
+            group_msg_ids = listings_db[l_id].get('group_message_ids', [])
+            if len(group_msg_ids) > 1:
+                desc_msg_id = group_msg_ids[-1]
+                data = listings_db[l_id]
+                updated_desc_message = (
+                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})**\n\n"
+                    f"📍 **{data['title']}**\n"
+                    f"💰 **{data['price']}**\n\n"
+                    f"{data['desc']}"
+                )
+                try:
+                    read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
+                    await context.bot.edit_message_text(
+                        chat_id=GROUP_CHAT_ID,
+                        message_id=desc_msg_id,
+                        text=updated_desc_message,
+                        parse_mode="Markdown",
+                        disable_web_page_preview=True,
+                        **read_opts
+                    )
+                except Exception as e:
+                    print(f"⚠️ Gagal edit mesej harga di group: {e}")
+
             context.user_data['state'] = None
             context.user_data['editing_id'] = None
-            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini!")
+            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini di bot dan di dalam group!")
 
 def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
