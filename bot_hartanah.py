@@ -14,7 +14,12 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-API_TOKEN = '8924536875:AAHOATpmmc61-zJV8efdI5TLaedk7GCnbho'
+# ⚠️ TOKEN DIBAWAH KEBAL DARI RALAT LINE-BREAK TELEFON:
+API_TOKEN = (
+    "8924536875:"
+    "AAHOATpmmc61-"
+    "zJV8efdI5TLaedk7GCnbho"
+)
 GROUP_CHAT_ID = -1003288686118  # Nombor ID Group yang sah
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
@@ -24,6 +29,7 @@ pinned_index_message_id = None
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+# --- SERVER WEB MINI UNTUK RENDER PORT BINDING ---
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -34,6 +40,7 @@ def run_web_server():
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(("0.0.0.0", port), SimpleHandler)
     server.serve_forever()
+# -------------------------------------------------
 
 def load_data():
     global listings_db, pinned_index_message_id
@@ -173,11 +180,38 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text("✅ Index berjaya disegarkan!")
         else:
             await query.message.reply_text("❌ Gagal segarkan index.")
-    # (Menu lain diringkaskan)
+    elif query.data == "edit_listing":
+        if not listings_db:
+            await query.message.reply_text("⚠️ Tiada listing aktif.")
+            return
+        keyboard = [[InlineKeyboardButton(f"Edit #{l_id}: {d['title']}", callback_data=f"edit_{l_id}")] for l_id, d in listings_db.items()]
+        await query.message.reply_text("✏️ Pilih listing untuk dikemaskini:", reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("edit_"):
+        l_id = int(query.data.split("_")[1])
+        context.user_data['editing_id'] = l_id
+        context.user_data['state'] = 'WAITING_FOR_NEW_PRICE'
+        await query.message.reply_text(f"Sila taip harga baru untuk Listing #{l_id}:")
+    elif query.data == "delete_listing":
+        if not listings_db:
+            await query.message.reply_text("⚠️ Tiada listing aktif.")
+            return
+        keyboard = [[InlineKeyboardButton(f"Padam #{l_id}: {d['title']}", callback_data=f"del_{l_id}")] for l_id, d in listings_db.items()]
+        await query.message.reply_text("🗑️ Pilih listing untuk dipadam:", reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("del_"):
+        l_id = int(query.data.split("_")[1])
+        if l_id in listings_db:
+            for msg_id in listings_db[l_id].get('group_message_ids', []):
+                try:
+                    await context.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg_id)
+                except:
+                    pass
+            del listings_db[l_id]
+            save_data()
+            await update_index_page(context)
+            await query.message.reply_text(f"✅ Listing #{l_id} dipadam.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get('state')
-    print(f"Debug State semasa: {state}")
 
     if state == 'WAITING_FOR_LISTING_PHOTOS':
         if update.message.photo:
@@ -187,27 +221,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if update.message.caption and not context.user_data.get('temp_caption'):
                 context.user_data['temp_caption'] = update.message.caption
 
-            print(f"Gambar diterima. Jumlah terkumpul: {len(context.user_data['temp_photos'])})")
             await update.message.reply_text(
                 f"📸 Gambar diterima! (Jumlah: {len(context.user_data['temp_photos'])}).\n"
                 f"Hantar lagi gambar atau taip **DONE**."
             )
         elif update.message.text:
             text_input = update.message.text.strip().upper()
-            print(f"Mesej teks diterima dalam mod foto: {text_input}")
-            
             if text_input == "DONE":
                 photos = context.user_data.get('temp_photos', [])
                 caption_text = context.user_data.get('temp_caption', '')
 
-                print(f"Proses DONE. Jumlah foto: {len(photos)}, Kapsyen wujud: {bool(caption_text)}")
-
                 if not photos:
-                    await update.message.reply_text("⚠️ Tiada gambar dikesan. Sila hantar sekurang-kurangnya satu gambar.")
+                    await update.message.reply_text("⚠️ Tiada gambar dikesan. Sila hantar gambar.")
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila pastikan anda menyertakan kapsyen pada gambar pertama.")
+                    await update.message.reply_text("⚠️ Sila sertakan kapsyen 3 baris pada gambar pertama.")
                     return
 
                 lines = caption_text.split('\n')
@@ -226,7 +255,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     group_message_ids = []
                     try:
-                        print(f"Cuba hantar ke group ID: {GROUP_CHAT_ID}")
                         if len(photos) > 1:
                             media_list = [InputMediaPhoto(media=photos[0], caption=group_caption, parse_mode="Markdown")]
                             for p_id in photos[1:]:
@@ -265,6 +293,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan dan dihantar ke group!")
                 else:
                     await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
+
+    elif state == 'WAITING_FOR_NEW_PRICE':
+        new_price = update.message.text.strip()
+        l_id = context.user_data.get('editing_id')
+        if l_id in listings_db:
+            listings_db[l_id]['price'] = new_price
+            save_data()
+            await update_index_page(context)
+            context.user_data['state'] = None
+            context.user_data['editing_id'] = None
+            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini!")
 
 def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
