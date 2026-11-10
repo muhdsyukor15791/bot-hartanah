@@ -17,9 +17,10 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-API_TOKEN = "8924536875:AAHOATpmmc6l-zJV8efdI5TLaedk7GCnbho"
-GROUP_CHAT_ID = -1003288686118
-BACKUP_CHANNEL_ID = -5119617442
+# Tetapkan di Render > Environment: TELEGRAM_BOT_TOKEN, GROUP_CHAT_ID, BACKUP_CHANNEL_ID
+API_TOKEN = "8924536875:AAHblyq6_3UpoEKSkFs4PzON4Bn2Kwp3v8s"
+GROUP_CHAT_ID = int(os.environ.get("GROUP_CHAT_ID", "-1003288686118"))
+BACKUP_CHANNEL_ID = int(os.environ.get("BACKUP_CHANNEL_ID", "-5119617442"))
 
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
@@ -42,73 +43,126 @@ def run_web_server():
     server.serve_forever()
 # -------------------------------------------------
 
+def _decode_backup_bytes(file_bytes: bytes):
+    """Validate and decode a backup before changing the live database."""
+    data = json.loads(file_bytes.decode("utf-8"))
+    if not isinstance(data, dict) or not isinstance(data.get("listings"), dict):
+        raise ValueError("Format JSON tidak sah: medan 'listings' tiada atau bukan object.")
+
+    restored = {}
+    for key, value in data["listings"].items():
+        listing_id = int(key)
+        if not isinstance(value, dict):
+            raise ValueError(f"Rekod listing #{listing_id} tidak sah.")
+        restored[listing_id] = value
+
+    pinned_id = data.get("pinned_index_message_id")
+    if pinned_id is not None:
+        pinned_id = int(pinned_id)
+    return restored, pinned_id
+
+
+async def _restore_from_pinned_backup(app: Application):
+    """Bot API tidak boleh menyenaraikan sejarah channel; ambil pinned message."""
+    chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
+    message = getattr(chat, "pinned_message", None)
+    if message is None:
+        raise FileNotFoundError("Tiada mesej backup yang dipin dalam Backup Channel.")
+    document = getattr(message, "document", None)
+    if document is None or not (document.file_name or "").endswith(DB_FILE):
+        raise ValueError("Pinned message bukan fail listings_data.json.")
+
+    telegram_file = await document.get_file()
+    file_bytes = await telegram_file.download_as_bytearray()
+    return _decode_backup_bytes(bytes(file_bytes))
+
+
 async def load_data_from_channel(app: Application):
+    """Restore Telegram pinned JSON dahulu, kemudian fallback ke local JSON."""
     global listings_db, pinned_index_message_id
+    print("🔄 Memulihkan data listing...")
+
     try:
-        print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
-        # Semak sehingga 50 mesej ke belakang untuk pastikan fail JSON dijumpai
-        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=50):
-            if message.document:
-                if message.document.file_name and DB_FILE in message.document.file_name:
-                    file = await message.document.get_file()
-                    file_bytes = await file.download_as_bytearray()
-                    
-                    data = json.loads(file_bytes.decode('utf-8'))
-                    raw_listings = data.get('listings', {})
-                    
-                    if raw_listings:  # Pastikan data di dalam JSON tidak kosong
-                        listings_db = {int(k): v for k, v in raw_listings.items()}
-                        pinned_index_message_id = data.get('pinned_index_message_id')
-                        print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
-                        return
+        restored, restored_pin_id = await _restore_from_pinned_backup(app)
+        listings_db = restored
+        pinned_index_message_id = restored_pin_id
+        print(f"✅ Restore Telegram berjaya: {len(listings_db)} listing.")
+        save_data()
+        return
+    except Exception as telegram_error:
+        print(f"⚠️ Restore Telegram tidak berjaya: {telegram_error}")
 
-        # Fallback ke fail tempatan jika ada
+    # Fallback local: jangan kosongkan database jika fail tiada/rosak.
+    try:
         if os.path.exists(DB_FILE):
-            with open(DB_FILE, 'r') as f:
-                data = json.load(f)
-                raw_listings = data.get('listings', {})
-                if raw_listings:
-                    listings_db = {int(k): v for k, v in raw_listings.items()}
-                    pinned_index_message_id = data.get('pinned_index_message_id')
-                    print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
-                    return
+            with open(DB_FILE, "rb") as f:
+                restored, restored_pin_id = _decode_backup_bytes(f.read())
+            listings_db = restored
+            pinned_index_message_id = restored_pin_id
+            print(f"✅ Restore fail tempatan berjaya: {len(listings_db)} listing.")
+            return
+    except Exception as local_error:
+        print(f"⚠️ Fail tempatan tidak dapat dibaca: {local_error}")
 
-        print("⚠️ Tiada data ditemui, memulakan pangkalan data kosong.")
-        listings_db = {}
-    except Exception as e:
-        print(f"⚠️ Gagal memuatkan data dari channel: {e}")
-        listings_db = {}
+    print("⚠️ Tiada backup yang boleh dipulihkan. Database sedia ada tidak akan dipadam.")
+
 
 def save_data():
+    """Simpan secara atomik supaya fail tidak separuh ditulis jika proses terhenti."""
+    temp_file = DB_FILE + ".tmp"
     try:
-        with open(DB_FILE, 'w') as f:
-            json.dump({
-                'listings': listings_db,
-                'pinned_index_message_id': pinned_index_message_id
-            }, f, indent=4)
-            print("💾 Data disimpan ke fail tempatan JSON.")
+        payload = {
+            "version": 1,
+            "saved_at": datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).isoformat(),
+            "listings": listings_db,
+            "pinned_index_message_id": pinned_index_message_id,
+        }
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=4)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_file, DB_FILE)
+        print("💾 Data disimpan ke fail tempatan JSON.")
     except Exception as e:
         print(f"⚠️ Gagal simpan data tempatan: {e}")
+        try:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+        except OSError:
+            pass
+
 
 async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
+    """Hantar snapshot JSON dan pin mesej backup terbaru untuk proses restore."""
     save_data()
     try:
-        data_to_send = json.dumps({
-            'listings': listings_db,
-            'pinned_index_message_id': pinned_index_message_id
-        }, indent=4).encode('utf-8')
-
+        payload = {
+            "version": 1,
+            "saved_at": datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).isoformat(),
+            "listings": listings_db,
+            "pinned_index_message_id": pinned_index_message_id,
+        }
+        data_to_send = json.dumps(payload, ensure_ascii=False, indent=4).encode("utf-8")
         file_doc = io.BytesIO(data_to_send)
         file_doc.name = DB_FILE
 
-        await context.bot.send_document(
+        sent_backup = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
-            caption="📦 **Auto-Backup Listing Data (Terkini)**"
+            caption=f"Auto-backup listing terkini | {payload['saved_at']}"
         )
-        print("☁️ Data berjaya di-backup ke Telegram Channel!")
+
+        # Pinned message ialah rujukan stabil untuk restore semasa Render startup.
+        await context.bot.pin_chat_message(
+            chat_id=BACKUP_CHANNEL_ID,
+            message_id=sent_backup.message_id,
+            disable_notification=True,
+        )
+        print(f"☁️ Backup berjaya dihantar dan dipin (message_id={sent_backup.message_id}).")
+        return True
     except Exception as e:
-        print(f"⚠️ Gagal backup ke Telegram Channel: {e}")
+        print(f"⚠️ Gagal backup/pin ke Telegram Channel: {e}")
+        return False
 
 def get_next_listing_id():
     if not listings_db:
@@ -548,8 +602,10 @@ def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
     server_thread.start()
 
-    app = Application.builder().token(API_TOKEN).build()
-    app.post_init = load_data_from_channel
+    if not API_TOKEN:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN belum ditetapkan dalam Environment Variables Render.")
+
+    app = Application.builder().token(API_TOKEN).post_init(load_data_from_channel).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
