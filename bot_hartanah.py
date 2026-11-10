@@ -153,9 +153,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         return False
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['state'] = None
     keyboard = [
         [InlineKeyboardButton("➕ Tambah Listing Baru", callback_data="add_listing")],
         [InlineKeyboardButton("✏️ Kemaskini Harga", callback_data="edit_listing")],
+        [InlineKeyboardButton("📝 Kemaskini Description", callback_data="edit_desc_menu")],
         [InlineKeyboardButton("🏷️ Set Status", callback_data="set_status")],
         [InlineKeyboardButton("🗑️ Padam Listing", callback_data="delete_listing")],
         [InlineKeyboardButton("📢 Refresh Index", callback_data="refresh_index")]
@@ -177,7 +179,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['temp_caption'] = ''
         await query.message.reply_text(
             "📸 **Tambah Listing Baru:**\n"
-            "Sila hantar gambar-gambar hartanah berserta **kapsyen** pada gambar pertama, kemudian taip **DONE**."
+            "Sila hantar gambar-gambar hartanah berserta **kapsyen (minima 3 baris)** pada gambar pertama, kemudian taip **DONE**."
         )
     elif query.data == "refresh_index":
         success = await update_index_page(context)
@@ -191,11 +193,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         keyboard = [[InlineKeyboardButton(f"Edit #{l_id}: {d['title']}", callback_data=f"edit_{l_id}")] for l_id, d in listings_db.items()]
         await query.message.reply_text("✏️ Pilih listing untuk dikemaskini harganya:", reply_markup=InlineKeyboardMarkup(keyboard))
-    elif query.data.startswith("edit_"):
+    elif query.data.startswith("edit_") and not query.data.startswith("editdesc_"):
         l_id = int(query.data.split("_")[1])
         context.user_data['editing_id'] = l_id
         context.user_data['state'] = 'WAITING_FOR_NEW_PRICE'
         await query.message.reply_text(f"Sila taip harga baru untuk Listing #{l_id}:")
+    elif query.data == "edit_desc_menu":
+        if not listings_db:
+            await query.message.reply_text("⚠️ Tiada listing aktif.")
+            return
+        keyboard = [[InlineKeyboardButton(f"Desc #{l_id}: {d['title']}", callback_data=f"editdesc_{l_id}")] for l_id, d in listings_db.items()]
+        await query.message.reply_text("📝 Pilih listing untuk dikemaskini description:", reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("editdesc_"):
+        l_id = int(query.data.split("_")[1])
+        context.user_data['editing_desc_id'] = l_id
+        context.user_data['state'] = 'WAITING_FOR_NEW_DESC'
+        await query.message.reply_text(f"Sila hantar **description baru** untuk Listing #{l_id}:")
     elif query.data == "set_status":
         if not listings_db:
             await query.message.reply_text("⚠️ Tiada listing aktif.")
@@ -223,8 +236,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if len(group_msg_ids) > 1:
                 desc_msg_id = group_msg_ids[-1]
                 data = listings_db[l_id]
+                status_str = f" - *[{new_status}]*" if new_status != "ACTIVE" else ""
                 updated_desc_message = (
-                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})** - *[{new_status}]*\n\n"
+                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
                     f"📍 **{data['title']}**\n"
                     f"💰 **{data['price']}**\n\n"
                     f"{data['desc']}"
@@ -267,7 +281,84 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get('state')
 
-    if state == 'WAITING_FOR_LISTING_PHOTOS':
+    if state == 'WAITING_FOR_NEW_PRICE':
+        new_price = update.message.text.strip()
+        l_id = context.user_data.get('editing_id')
+        if l_id in listings_db:
+            listings_db[l_id]['price'] = new_price
+            save_data()
+            await update_index_page(context)
+            
+            group_msg_ids = listings_db[l_id].get('group_message_ids', [])
+            if len(group_msg_ids) > 1:
+                desc_msg_id = group_msg_ids[-1]
+                data = listings_db[l_id]
+                status_val = data.get('status', 'ACTIVE')
+                status_str = f" - *[{status_val}]*" if status_val != "ACTIVE" else ""
+                
+                updated_desc_message = (
+                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
+                    f"📍 **{data['title']}**\n"
+                    f"💰 **{data['price']}**\n\n"
+                    f"{data['desc']}"
+                )
+                try:
+                    read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
+                    await context.bot.edit_message_text(
+                        chat_id=GROUP_CHAT_ID,
+                        message_id=desc_msg_id,
+                        text=updated_desc_message,
+                        parse_mode="Markdown",
+                        disable_web_page_preview=True,
+                        **read_opts
+                    )
+                except Exception as e:
+                    print(f"⚠️ Gagal edit mesej harga di group: {e}")
+
+            context.user_data['state'] = None
+            context.user_data['editing_id'] = None
+            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini di bot dan di dalam group!")
+        return
+
+    elif state == 'WAITING_FOR_NEW_DESC':
+        new_desc = update.message.text.strip()
+        l_id = context.user_data.get('editing_desc_id')
+        if l_id in listings_db:
+            listings_db[l_id]['desc'] = new_desc
+            save_data()
+            
+            group_msg_ids = listings_db[l_id].get('group_message_ids', [])
+            if len(group_msg_ids) > 1:
+                desc_msg_id = group_msg_ids[-1]
+                data = listings_db[l_id]
+                status_val = data.get('status', 'ACTIVE')
+                status_str = f" - *[{status_val}]*" if status_val != "ACTIVE" else ""
+                
+                updated_desc_message = (
+                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
+                    f"📍 **{data['title']}**\n"
+                    f"💰 **{data['price']}**\n\n"
+                    f"{new_desc}"
+                )
+                try:
+                    read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
+                    await context.bot.edit_message_text(
+                        chat_id=GROUP_CHAT_ID,
+                        message_id=desc_msg_id,
+                        text=updated_desc_message,
+                        parse_mode="Markdown",
+                        disable_web_page_preview=True,
+                        **read_opts
+                    )
+                except Exception as e:
+                    print(f"⚠️ Gagal edit mesej description di group: {e}")
+
+            context.user_data['state'] = None
+            context.user_data['editing_desc_id'] = None
+            await update.message.reply_text(f"✅ Description Listing #{l_id} berjaya dikemaskini secara live di group!")
+        return
+
+    elif state == 'WAITING_FOR_LISTING_PHOTOS':
         if update.message.photo:
             photo_file_id = update.message.photo[-1].file_id
             context.user_data['temp_photos'].append(photo_file_id)
@@ -378,41 +469,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text("📝 Kapsyen diterima! Sekarang hantar gambar atau taip **DONE**.")
                 else:
                     await update.message.reply_text("Sila hantar gambar seterusnya atau taip **DONE** untuk selesai.")
-
-    elif state == 'WAITING_FOR_NEW_PRICE':
-        new_price = update.message.text.strip()
-        l_id = context.user_data.get('editing_id')
-        if l_id in listings_db:
-            listings_db[l_id]['price'] = new_price
-            save_data()
-            await update_index_page(context)
-            
-            group_msg_ids = listings_db[l_id].get('group_message_ids', [])
-            if len(group_msg_ids) > 1:
-                desc_msg_id = group_msg_ids[-1]
-                data = listings_db[l_id]
-                updated_desc_message = (
-                    f"📄 **MAKLUMAT LANJUT (ID #{l_id})**\n\n"
-                    f"📍 **{data['title']}**\n"
-                    f"💰 **{data['price']}**\n\n"
-                    f"{data['desc']}"
-                )
-                try:
-                    read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
-                    await context.bot.edit_message_text(
-                        chat_id=GROUP_CHAT_ID,
-                        message_id=desc_msg_id,
-                        text=updated_desc_message,
-                        parse_mode="Markdown",
-                        disable_web_page_preview=True,
-                        **read_opts
-                    )
-                except Exception as e:
-                    print(f"⚠️ Gagal edit mesej harga di group: {e}")
-
-            context.user_data['state'] = None
-            context.user_data['editing_id'] = None
-            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini di bot dan di dalam group!")
+    else:
+        await update.message.reply_text("Sila tekan /start untuk menggunakan menu utama.")
 
 def main():
     server_thread = threading.Thread(target=run_web_server, daemon=True)
