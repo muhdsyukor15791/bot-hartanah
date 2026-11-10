@@ -14,9 +14,9 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-# ⚠️ TUKAR BAHAGIAN INI DENGAN DATA ANDA:
+# ⚠️ PASTIKAN TOKEN DAN CHAT ID GROUP ANDA BETUL DI SINI:
 API_TOKEN = '8924536875:AAHOATpmmc6l-zJV8efdI5TLaedk7GCnbho'
-GROUP_CHAT_ID = '@RUMAHBYSYUKOR'
+GROUP_CHAT_ID = -1003288686118  # Tukar kepada ID Group anda (biasanya nombor negatif bermula dengan -100)
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
 
@@ -39,7 +39,6 @@ def run_web_server():
 # -------------------------------------------------
 
 def load_data():
-    """Membaca data dari fail JSON jika wujud"""
     global listings_db, pinned_index_message_id
     if os.path.exists(DB_FILE):
         try:
@@ -55,7 +54,6 @@ def load_data():
         listings_db = {}
 
 def save_data():
-    """Menyimpan data terkini ke fail JSON"""
     try:
         with open(DB_FILE, 'w') as f:
             json.dump({
@@ -67,7 +65,6 @@ def save_data():
         print(f"⚠️ Gagal menyimpan data: {e}")
 
 def get_next_listing_id():
-    """Cari ID terkecil yang kosong (guna semula nombor ID yang telah dipadam)"""
     if not listings_db:
         return 1
     existing_ids = sorted(listings_db.keys())
@@ -98,9 +95,20 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             elif status_val == "SOLD":
                 status_icon = "🔴 [SOLD]"
 
+            # Bina pautan terus ke mesej posting dalam group
+            group_msg_ids = data.get('group_message_ids', [])
+            link_text = "Tiada pautan"
+            if group_msg_ids:
+                first_msg_id = group_msg_ids[0]
+                # Tukar ID group (cth: -1001234567890 -> 1234567890) untuk pautan t.me
+                clean_chat_id = str(GROUP_CHAT_ID).replace("-100", "")
+                link_text = f"https://t.me/c/{clean_chat_id}/{first_msg_id}"
+
+            # Baris 1: Tajuk & Harga (Maintain), Baris 2: Hanya link message tanpa emoji
             index_text += (
                 f"🔹 **ID #{l_id}** | {data['title']}\n"
                 f"   💰 {data['price']} {status_icon}\n"
+                f"   🔗 {link_text}\n"
                 f"-----------------------------------\n"
             )
 
@@ -111,7 +119,8 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=GROUP_CHAT_ID,
                     message_id=pinned_index_message_id,
                     text=index_text,
-                    parse_mode="Markdown"
+                    parse_mode="Markdown",
+                    disable_web_page_preview=True
                 )
                 save_data()
                 return True
@@ -121,7 +130,8 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
-            parse_mode="Markdown"
+            parse_mode="Markdown",
+            disable_web_page_preview=True
         )
         pinned_index_message_id = sent_msg.message_id
         save_data()
@@ -382,11 +392,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
 def main():
-    # Lancarkan server web kecil di latar belakang supaya Render kesan port
     server_thread = threading.Thread(target=run_web_server, daemon=True)
     server_thread.start()
 
-    load_data()  # Baca data tersimpan dari fail JSON
+    load_data()
     app = Application.builder().token(API_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
