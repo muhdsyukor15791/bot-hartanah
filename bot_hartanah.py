@@ -45,6 +45,22 @@ def run_web_server():
 async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
+        # 1. Cuba muat turun fail backup terkini terus dari Private Telegram Channel
+        print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
+        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=10):
+            if message.document and message.document.file_name == DB_FILE:
+                file = await message.document.get_file()
+                file_bytes = await file.download_as_bytearray()
+                
+                data = json.loads(file_bytes.decode('utf-8'))
+                raw_listings = data.get('listings', {})
+                listings_db = {int(k): v for k, v in raw_listings.items()}
+                pinned_index_message_id = data.get('pinned_index_message_id')
+                
+                print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
+                return
+
+        # 2. Jika tiada di channel, cuba baca fail tempatan (jika ada)
         if os.path.exists(DB_FILE):
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
@@ -54,10 +70,10 @@ async def load_data_from_channel(app: Application):
                 print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
                 return
 
-        print("🔄 Mencari fail backup data...")
+        print("⚠️ Tiada data ditemui, memulakan pangkalan data kosong.")
         listings_db = {}
     except Exception as e:
-        print(f"⚠️ Gagal memuatkan data: {e}")
+        print(f"⚠️ Gagal memuatkan data dari channel: {e}")
         listings_db = {}
 
 def save_data():
@@ -109,10 +125,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     
     # Dapatkan masa semasa mengikut zon masa Malaysia (Kuala Lumpur)
     try:
-        malaysia_tz = ZoneInfo("Asia/Kuala_ Lumpur")
-    except:
-        malaysia_tz = None
-    current_time = datetime.now(malaysia_tz).strftime('%d/%m/%Y %I:%M %p') if malaysia_tz else datetime.now().strftime('%d/%m/%Y %I:%M %p')
+        malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+        current_time = datetime.now(malaysia_tz).strftime('%d/%m/%Y %I:%M %p')
+    except Exception:
+        malaysia_time = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Kuala_Lumpur"))
+        current_time = malaysia_time.strftime('%d/%m/%Y %I:%M %p')
 
     index_text = f"🏠 **SENARAI UTAMA LISTING HARTANAH** 🏠\n🕒 *Last Updated: {current_time}*\n\n"
 
@@ -145,7 +162,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     try:
         old_pinned_id = pinned_index_message_id
 
-        # Hantar mesej index baru setiap kali kemas kini
+        # Hantar mesej index baru
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -156,7 +173,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         save_data()
         await backup_to_channel(context)
         
-        # Pin mesej index yang baru
+        # Pin mesej index baru
         try:
             await context.bot.pin_chat_message(
                 chat_id=GROUP_CHAT_ID,
@@ -165,14 +182,13 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             print(f"⚠️ Nota pin mesej index: {e}")
 
-        # Unpin mesej index yang lama (jika wujud)
+        # Unpin dan padam mesej index lama
         if old_pinned_id and old_pinned_id != pinned_index_message_id:
             try:
                 await context.bot.unpin_chat_message(
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id
                 )
-                # Padam mesej index lama dari group supaya tidak memenuhi ruang
                 await context.bot.delete_message(
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id
