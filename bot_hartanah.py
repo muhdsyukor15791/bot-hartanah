@@ -115,7 +115,6 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             )
 
     try:
-        # Cuba kemaskini mesej index yang sedia ada jika ID wujud
         if pinned_index_message_id:
             try:
                 await context.bot.edit_message_text(
@@ -128,10 +127,9 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 save_data()
                 return True
             except Exception as edit_err:
-                print(f"⚠️ Tidak dapat edit mesej index lama (mungkin telah dipadam): {edit_err}")
+                print(f"⚠️ Tidak dapat edit mesej index lama: {edit_err}")
                 pinned_index_message_id = None
 
-        # Jika tiada mesej index lama atau gagal diedit, hantar mesej baru dan pin
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -274,12 +272,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     group_message_ids = []
                     try:
+                        # Tetapkan read_timeout dan write_timeout yang tinggi (60 saat) untuk elakkan timeout
+                        read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
+
                         if len(photos) > 1:
                             media_list = [InputMediaPhoto(media=photos[0], caption=short_media_caption, parse_mode="Markdown")]
                             for p_id in photos[1:]:
                                 media_list.append(InputMediaPhoto(media=p_id))
                             
-                            sent_msgs = await context.bot.send_media_group(chat_id=GROUP_CHAT_ID, media=media_list)
+                            sent_msgs = await context.bot.send_media_group(chat_id=GROUP_CHAT_ID, media=media_list, **read_opts)
                             for msg in sent_msgs:
                                 group_message_ids.append(msg.message_id)
                         else:
@@ -287,7 +288,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 chat_id=GROUP_CHAT_ID,
                                 photo=photos[0],
                                 caption=short_media_caption,
-                                parse_mode="Markdown"
+                                parse_mode="Markdown",
+                                **read_opts
                             )
                             group_message_ids.append(sent_msg.message_id)
 
@@ -295,7 +297,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             chat_id=GROUP_CHAT_ID,
                             text=full_desc_message,
                             parse_mode="Markdown",
-                            disable_web_page_preview=True
+                            disable_web_page_preview=True,
+                            **read_opts
                         )
                         group_message_ids.append(desc_sent_msg.message_id)
 
@@ -319,7 +322,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     context.user_data['temp_photos'] = []
                     context.user_data['temp_caption'] = ''
 
-                    # Kemas kini atau buat semula mesej index di group
                     await update_index_page(context)
                     await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan index dikemas kini!")
                 else:
