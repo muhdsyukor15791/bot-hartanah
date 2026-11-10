@@ -14,7 +14,6 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-# ⚠️ TOKEN DIBAWAH KEBAL DARI RALAT LINE-BREAK TELEFON:
 API_TOKEN = (
     "8924536875:"
     "AAHOATpmmc6l-"
@@ -48,9 +47,15 @@ def load_data():
         try:
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
-                listings_db = {int(k): v for k, v in data.get('listings', {}).items()}
+                # Pastikan key ditukar semula ke integer dan dinomborkan semula jika perlu
+                raw_listings = data.get('listings', {})
+                listings_db = {}
+                # Susun semula mengikut urutan kekunci yang ada
+                for idx, (old_key, val) in enumerate(sorted(raw_listings.items(), key=lambda x: int(x[0])), start=1):
+                    listings_db[idx] = val
+                    
                 pinned_index_message_id = data.get('pinned_index_message_id')
-                print(f"✅ Data dimuatkan: {len(listings_db)} listing.")
+                print(f"✅ Data dimuatkan & dinomborkan semula: {len(listings_db)} listing.")
         except Exception as e:
             print(f"⚠️ Gagal baca DB: {e}")
             listings_db = {}
@@ -69,16 +74,19 @@ def save_data():
         print(f"⚠️ Gagal simpan data: {e}")
 
 def get_next_listing_id():
+    """ Sentiasa berikan nombor seterusnya berdasarkan jumlah listing yang ada (Bermula dari 1) """
     if not listings_db:
         return 1
-    existing_ids = sorted(listings_db.keys())
-    expected_id = 1
-    for l_id in existing_ids:
-        if l_id == expected_id:
-            expected_id += 1
-        else:
-            break
-    return expected_id
+    return max(listings_db.keys()) + 1
+
+async def reindex_listings():
+    """ Menyusun semula semua ID listing secara urutan 1, 2, 3... selepas ada yang dipadam """
+    global listings_db
+    sorted_items = sorted(listings_db.items(), key=lambda x: x[0])
+    new_db = {}
+    for new_id, (old_id, data) in enumerate(sorted_items, start=1):
+        new_db[new_id] = data
+    listings_db = new_db
 
 async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     global pinned_index_message_id
@@ -205,10 +213,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg_id)
                 except:
                     pass
+            
+            # Padam listing yang dipilih
             del listings_db[l_id]
+            
+            # Susun semula (reindex) ID supaya nombor sentiasa bermula dari 1 dan berurutan
+            await reindex_listings()
+            
             save_data()
             await update_index_page(context)
-            await query.message.reply_text(f"✅ Listing #{l_id} dipadam.")
+            await query.message.reply_text(f"✅ Listing dipadam dan ID telah disusun semula secara automatik!")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get('state')
@@ -225,18 +239,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"📸 Gambar diterima! (Jumlah: {len(context.user_data['temp_photos'])}).\n"
                 f"Hantar lagi gambar atau taip **DONE**."
             )
-        elif update.message.text:
+            return
+
+        if update.message.text:
             text_input = update.message.text.strip().upper()
+            
             if text_input == "DONE":
                 photos = context.user_data.get('temp_photos', [])
                 caption_text = context.user_data.get('temp_caption', '')
 
                 if not photos:
-                    await update.message.reply_text("⚠️ Tiada gambar dikesan. Sila hantar gambar.")
+                    await update.message.reply_text("⚠️ Tiada gambar dikesan. Sila hantar sekurang-kurangnya satu gambar.")
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila sertakan kapsyen 3 baris pada gambar pertama.")
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen 3 baris.")
                     return
 
                 lines = caption_text.split('\n')
@@ -271,9 +288,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 parse_mode="Markdown"
                             )
                             group_message_ids.append(sent_msg.message_id)
-                        print("✅ Berjaya hantar media ke group!")
                     except Exception as e:
                         print(f"❌ Ralat hantar media ke group: {e}")
+                        await update.message.reply_text(f"❌ Ralat teknikal menghantar ke group: {e}")
+                        return
 
                     listings_db[saved_id] = {
                         "photos": photos,
@@ -293,6 +311,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan dan dihantar ke group!")
                 else:
                     await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
+            else:
+                if not context.user_data.get('temp_caption'):
+                    context.user_data['temp_caption'] = update.message.text
+                    await update.message.reply_text("📝 Kapsyen diterima! Sekarang hantar gambar atau taip **DONE**.")
+                else:
+                    await update.message.reply_text("Sila hantar gambar seterusnya atau taip **DONE** untuk selesai.")
 
     elif state == 'WAITING_FOR_NEW_PRICE':
         new_price = update.message.text.strip()
