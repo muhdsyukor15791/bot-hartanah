@@ -155,9 +155,13 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 clean_chat_id = str(GROUP_CHAT_ID).replace("-100", "")
                 link_text = f"https://t.me/c/{clean_chat_id}/{first_msg_id}"
 
+            # Elakkan ralat jika field price kosong
+            price_display = data.get('price', '')
+            price_line = f"   {price_display}\n" if price_display else ""
+
             index_text += (
                 f"🔹 **ID #{l_id}** | {data['title']}{status_str}\n"
-                f"   {data['price']}\n"
+                f"{price_line}"
                 f"   🔗 {link_text}\n"
                 f"-----------------------------------\n"
             )
@@ -296,10 +300,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 desc_msg_id = group_msg_ids[-1]
                 d_item = listings_db[l_id]
                 status_str = f" - *[{new_status}]*" if new_status != "ACTIVE" else ""
+                price_txt = f"💰 **{d_item['price']}**\n\n" if d_item.get('price') else ""
                 updated_desc_message = (
                     f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
                     f"📍 **{d_item['title']}**\n"
-                    f"💰 **{d_item['price']}**\n\n"
+                    f"{price_txt}"
                     f"{d_item['desc']}"
                 )
                 try:
@@ -358,11 +363,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 d_item = listings_db[l_id]
                 status_val = d_item.get('status', 'ACTIVE')
                 status_str = f" - *[{status_val}]*" if status_val != "ACTIVE" else ""
+                price_txt = f"💰 **{d_item['price']}**\n\n" if d_item.get('price') else ""
                 
                 updated_desc_message = (
                     f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
                     f"📍 **{d_item['title']}**\n"
-                    f"💰 **{d_item['price']}**\n\n"
+                    f"{price_txt}"
                     f"{d_item['desc']}"
                 )
                 try:
@@ -404,11 +410,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 d_item = listings_db[l_id]
                 status_val = d_item.get('status', 'ACTIVE')
                 status_str = f" - *[{status_val}]*" if status_val != "ACTIVE" else ""
+                price_txt = f"💰 **{d_item['price']}**\n\n" if d_item.get('price') else ""
                 
                 updated_desc_message = (
                     f"📄 **MAKLUMAT LANJUT (ID #{l_id})**{status_str}\n\n"
                     f"📍 **{d_item['title']}**\n"
-                    f"💰 **{d_item['price']}**\n\n"
+                    f"{price_txt}"
                     f"{new_desc}"
                 )
                 try:
