@@ -17,7 +17,7 @@ from telegram.ext import (
 # ⚠️ TOKEN DIBAWAH KEBAL DARI RALAT LINE-BREAK TELEFON:
 API_TOKEN = (
     "8924536875:"
-    "AAHOATpmmc61-"
+    "AAHOATpmmc6l-"
     "zJV8efdI5TLaedk7GCnbho"
 )
 GROUP_CHAT_ID = -1003288686118  # Nombor ID Group yang sah
