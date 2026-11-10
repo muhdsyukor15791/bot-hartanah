@@ -253,13 +253,14 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         old_pinned_message = getattr(chat, "pinned_message", None)
         old_pinned_id = old_pinned_message.message_id if old_pinned_message else None
 
-        # Kapsyen ringkas tanpa sebarang emoji supaya mudah dibaca dan tidak mengelirukan bot
+        # Kapsyen ringkas tanpa emoji
         simple_caption = (
             f"Auto-Backup Listing Data (Terkini)\n"
             f"Tarikh: {payload['saved_at']}\n"
             f"Jumlah Listing: {len(listings_db)}"
         )
 
+        # 1. Hantar backup baharu ke channel
         sent_backup = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
@@ -270,6 +271,7 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             logger.error("⚠️ Gagal menghantar dokumen backup ke channel Telegram.")
             return False
 
+        # 2. Pin mesej backup baharu
         await context.bot.pin_chat_message(
             chat_id=BACKUP_CHANNEL_ID,
             message_id=sent_backup.message_id,
@@ -277,6 +279,7 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         )
         logger.info(f"☁️ BACKUP OK: Mesej #{sent_backup.message_id} berjaya dihantar dan dipin.")
 
+        # 3. Nyahpin DAN padam mesej backup lama secara automatik
         if old_pinned_id and old_pinned_id != sent_backup.message_id:
             try:
                 await context.bot.unpin_chat_message(
@@ -285,6 +288,15 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
                 )
             except Exception as unpin_err:
                 logger.warning(f"⚠️ Gagal unpin backup lama: {unpin_err}")
+
+            try:
+                await context.bot.delete_message(
+                    chat_id=BACKUP_CHANNEL_ID,
+                    message_id=old_pinned_id
+                )
+                logger.info(f"🗑️ Mesej backup lama (#{old_pinned_id}) telah dipadam dari channel.")
+            except Exception as del_err:
+                logger.warning(f"⚠️ Gagal padam mesej backup lama: {del_err}")
 
         return True
     except Exception as e:
