@@ -47,10 +47,8 @@ def load_data():
         try:
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
-                # Pastikan key ditukar semula ke integer dan dinomborkan semula jika perlu
                 raw_listings = data.get('listings', {})
                 listings_db = {}
-                # Susun semula mengikut urutan kekunci yang ada
                 for idx, (old_key, val) in enumerate(sorted(raw_listings.items(), key=lambda x: int(x[0])), start=1):
                     listings_db[idx] = val
                     
@@ -74,13 +72,11 @@ def save_data():
         print(f"⚠️ Gagal simpan data: {e}")
 
 def get_next_listing_id():
-    """ Sentiasa berikan nombor seterusnya berdasarkan jumlah listing yang ada (Bermula dari 1) """
     if not listings_db:
         return 1
     return max(listings_db.keys()) + 1
 
 async def reindex_listings():
-    """ Menyusun semula semua ID listing secara urutan 1, 2, 3... selepas ada yang dipadam """
     global listings_db
     sorted_items = sorted(listings_db.items(), key=lambda x: x[0])
     new_db = {}
@@ -214,12 +210,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except:
                     pass
             
-            # Padam listing yang dipilih
             del listings_db[l_id]
-            
-            # Susun semula (reindex) ID supaya nombor sentiasa bermula dari 1 dan berurutan
             await reindex_listings()
-            
             save_data()
             await update_index_page(context)
             await query.message.reply_text(f"✅ Listing dipadam dan ID telah disusun semula secara automatik!")
@@ -263,17 +255,26 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     desc = "\n".join(lines[2:]).strip()
                     saved_id = get_next_listing_id()
 
-                    group_caption = (
-                        f"📢 **NEW LISTING!** (ID #{saved_id})\n\n"
+                    # 1. Kapsyen pendek pada gambar (mengelakkan ralat had panjang)
+                    short_media_caption = (
+                        f"📢 **NEW LISTING!** (ID #{saved_id})\n"
                         f"📍 **{title}**\n"
-                        f"💰 Harga/Sewa: {price}\n"
-                        f"📄 Info: {desc}"
+                        f"💰 Harga/Sewa: {price}"
+                    )
+
+                    # 2. Mesej teks penuh penerangan hartanah (tiada had aksara ketat)
+                    full_desc_message = (
+                        f"📄 **MAKLUMAT LANJUT (ID #{saved_id})**\n\n"
+                        f"📍 **{title}**\n"
+                        f"💰 **{price}**\n\n"
+                        f"{desc}"
                     )
 
                     group_message_ids = []
                     try:
+                        # Hantar media terlebih dahulu dengan kapsyen pendek
                         if len(photos) > 1:
-                            media_list = [InputMediaPhoto(media=photos[0], caption=group_caption, parse_mode="Markdown")]
+                            media_list = [InputMediaPhoto(media=photos[0], caption=short_media_caption, parse_mode="Markdown")]
                             for p_id in photos[1:]:
                                 media_list.append(InputMediaPhoto(media=p_id))
                             
@@ -284,12 +285,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             sent_msg = await context.bot.send_photo(
                                 chat_id=GROUP_CHAT_ID,
                                 photo=photos[0],
-                                caption=group_caption,
+                                caption=short_media_caption,
                                 parse_mode="Markdown"
                             )
                             group_message_ids.append(sent_msg.message_id)
+
+                        # Hantar pula mesej teks penerangan panjang di bawah album gambar
+                        desc_sent_msg = await context.bot.send_message(
+                            chat_id=GROUP_CHAT_ID,
+                            text=full_desc_message,
+                            parse_mode="Markdown",
+                            disable_web_page_preview=True
+                        )
+                        group_message_ids.append(desc_sent_msg.message_id)
+
+                        print("✅ Berjaya hantar media dan info penuh ke group!")
                     except Exception as e:
-                        print(f"❌ Ralat hantar media ke group: {e}")
+                        print(f"❌ Ralat hantar ke group: {e}")
                         await update.message.reply_text(f"❌ Ralat teknikal menghantar ke group: {e}")
                         return
 
