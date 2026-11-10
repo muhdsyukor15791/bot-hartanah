@@ -3,7 +3,7 @@ import json
 import os
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -219,7 +219,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             save_data()
             await update_index_page(context)
             
-            # Kemaskini mesej teks fizikal di group jika ada
             group_msg_ids = listings_db[l_id].get('group_message_ids', [])
             if len(group_msg_ids) > 1:
                 desc_msg_id = group_msg_ids[-1]
@@ -388,7 +387,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             save_data()
             await update_index_page(context)
             
-            # Kemaskini mesej teks fizikal di group secara live
             group_msg_ids = listings_db[l_id].get('group_message_ids', [])
             if len(group_msg_ids) > 1:
                 desc_msg_id = group_msg_ids[-1]
