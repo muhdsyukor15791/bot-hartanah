@@ -115,6 +115,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
             )
 
     try:
+        # Cuba kemaskini mesej index yang sedia ada jika ID wujud
         if pinned_index_message_id:
             try:
                 await context.bot.edit_message_text(
@@ -126,9 +127,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 )
                 save_data()
                 return True
-            except Exception:
+            except Exception as edit_err:
+                print(f"⚠️ Tidak dapat edit mesej index lama (mungkin telah dipadam): {edit_err}")
                 pinned_index_message_id = None
 
+        # Jika tiada mesej index lama atau gagal diedit, hantar mesej baru dan pin
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -144,11 +147,11 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 message_id=pinned_index_message_id
             )
         except Exception as e:
-            print(f"Nota pin mesej: {e}")
+            print(f"⚠️ Nota pin mesej index: {e}")
 
         return True
     except Exception as e:
-        print(f"Ralat kemaskini index: {e}")
+        print(f"❌ Ralat kritikal kemaskini index: {e}")
         return False
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -176,7 +179,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['temp_caption'] = ''
         await query.message.reply_text(
             "📸 **Tambah Listing Baru:**\n"
-            "Sila hantar gambar-gambar hartanah berserta **kapsyen (3 baris)** pada gambar pertama, kemudian taip **DONE**."
+            "Sila hantar gambar-gambar hartanah berserta **kapsyen** pada gambar pertama, kemudian taip **DONE**."
         )
     elif query.data == "refresh_index":
         success = await update_index_page(context)
@@ -210,7 +213,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except:
                     pass
             
-            del listings_db[l_id]
+            listings_db.pop(l_id, None)
             await reindex_listings()
             save_data()
             await update_index_page(context)
@@ -245,7 +248,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen 3 baris.")
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen.")
                     return
 
                 lines = caption_text.split('\n')
@@ -255,14 +258,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     desc = "\n".join(lines[2:]).strip()
                     saved_id = get_next_listing_id()
 
-                    # 1. Kapsyen pendek pada gambar (mengelakkan ralat had panjang)
                     short_media_caption = (
                         f"📢 **NEW LISTING!** (ID #{saved_id})\n"
                         f"📍 **{title}**\n"
-                        f"💰 Harga/Sewa: {price}"
+                        f"💰 Harga/Sewa: {price}\n"
+                        f"*(Maklumat lanjut di bawah 👇)*"
                     )
 
-                    # 2. Mesej teks penuh penerangan hartanah (tiada had aksara ketat)
                     full_desc_message = (
                         f"📄 **MAKLUMAT LANJUT (ID #{saved_id})**\n\n"
                         f"📍 **{title}**\n"
@@ -272,7 +274,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     group_message_ids = []
                     try:
-                        # Hantar media terlebih dahulu dengan kapsyen pendek
                         if len(photos) > 1:
                             media_list = [InputMediaPhoto(media=photos[0], caption=short_media_caption, parse_mode="Markdown")]
                             for p_id in photos[1:]:
@@ -290,7 +291,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             )
                             group_message_ids.append(sent_msg.message_id)
 
-                        # Hantar pula mesej teks penerangan panjang di bawah album gambar
                         desc_sent_msg = await context.bot.send_message(
                             chat_id=GROUP_CHAT_ID,
                             text=full_desc_message,
@@ -319,8 +319,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     context.user_data['temp_photos'] = []
                     context.user_data['temp_caption'] = ''
 
+                    # Kemas kini atau buat semula mesej index di group
                     await update_index_page(context)
-                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan dan dihantar ke group!")
+                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan index dikemas kini!")
                 else:
                     await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
             else:
