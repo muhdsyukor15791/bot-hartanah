@@ -253,14 +253,12 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         old_pinned_message = getattr(chat, "pinned_message", None)
         old_pinned_id = old_pinned_message.message_id if old_pinned_message else None
 
-        # Kapsyen ringkas tanpa emoji
         simple_caption = (
             f"Auto-Backup Listing Data (Terkini)\n"
             f"Tarikh: {payload['saved_at']}\n"
             f"Jumlah Listing: {len(listings_db)}"
         )
 
-        # 1. Hantar backup baharu ke channel
         sent_backup = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
@@ -271,7 +269,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             logger.error("⚠️ Gagal menghantar dokumen backup ke channel Telegram.")
             return False
 
-        # 2. Pin mesej backup baharu
         await context.bot.pin_chat_message(
             chat_id=BACKUP_CHANNEL_ID,
             message_id=sent_backup.message_id,
@@ -279,7 +276,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         )
         logger.info(f"☁️ BACKUP OK: Mesej #{sent_backup.message_id} berjaya dihantar dan dipin.")
 
-        # 3. Nyahpin DAN padam mesej backup lama secara automatik
         if old_pinned_id and old_pinned_id != sent_backup.message_id:
             try:
                 await context.bot.unpin_chat_message(
@@ -363,6 +359,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
     try:
         old_pinned_id = pinned_index_message_id
 
+        # 1. Hantar mesej index baru ke group utama
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -371,28 +368,37 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
         )
         pinned_index_message_id = sent_msg.message_id
         save_data()
+        
+        # 2. Buat backup ke channel
         await backup_to_channel(context)
         
+        # 3. Pin mesej index baru di group utama
         try:
             await context.bot.pin_chat_message(
                 chat_id=GROUP_CHAT_ID,
                 message_id=pinned_index_message_id
             )
         except Exception as e:
-            logger.warning(f"Nota pin mesej index: {e}")
+            logger.warning(f"Nota pin mesej index di group: {e}")
 
+        # 4. Unpin DAN padam mesej index lama di group utama secara automatik
         if old_pinned_id and old_pinned_id != pinned_index_message_id:
             try:
                 await context.bot.unpin_chat_message(
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id
                 )
+            except Exception as unpin_err:
+                logger.warning(f"Nota unpin index lama di group: {unpin_err}")
+
+            try:
                 await context.bot.delete_message(
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id
                 )
-            except Exception as unpin_err:
-                logger.warning(f"Nota unpin/padam index lama: {unpin_err}")
+                logger.info(f"🗑️ Mesej index lama (#{old_pinned_id}) berjaya dipadam dari group utama.")
+            except Exception as del_err:
+                logger.warning(f"Nota padam index lama di group: {del_err}")
 
         return True
     except Exception as e:
