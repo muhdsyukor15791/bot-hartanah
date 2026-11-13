@@ -84,8 +84,8 @@ listings_db = {
             "AgACAgUAAxkBAAICAAFq80AffEiZTWr9X2mL6HdITNoQSwACWBZrG6WwmFekxRhik3eEKAEAAwIAA3gAAz0E",
             "AgACAgUAAxkBAAICAWrzQB8hyqlZo9_cbVDtddZOzmIuAAJZFmsbpbCYV6tj-V3_dmJCAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICAmrzQB_qMVohU9HhPx1ZP_ppkidhAAJaFmsbpbCYV9ojUJ_lykdnAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeQADPQQ"
         ],
@@ -106,7 +106,7 @@ listings_db = {
             "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC3Grzr0eVkgIFKamDHWy8owrsSmJYAALkE2sbpbCgV362wBr-0J3HAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,200",
         "price": "RM1,200 / bulan",
@@ -154,7 +154,7 @@ listings_db = {
             "AgACAgUAAxkBAAIDYGrztFtW7dNJo4BfQ4KW37UO7QABTAAC-xNrG6WwoFcLTheMXzga6QEAAwIAA3gAAz0E",
             "AgACAgUAAxkBAAIDYWrztFvydrmxwISR0HPzmQwNy5P9AAL8E2sbpbCgV8GV_QcX53dQAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDYmrztFt_o1ei8aKWcdPlPcnOEtSiAAL9E2sbpbCgV8Ka6SzwNjSfAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDY2rztFu8OQfKDE0Qk88xFNG6zdaDAAL-E2sbpbCgV6gOsbMfsFbaAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDY2rztFu8OQfKDE0Qk88xFNG6zdaDAAL-E2sbpbCgV6gOsbMfsFbaAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDZGrztFuYN7Aqj4mk6YHiB7mcP9rBAAL_E2sbpbCgV8bGB5FZYpi-AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDZWrztFtn5rBvD90LwzfWMiLo093ZAAMUaxulsKBXe1gOQU8R-zQBAAMCAAN5AAM9BA",
             "AgACAgUAAxkBAAIDZmrztFtbgbjfXLmyKRggd1KxpRWTAAIBFGsbpbCgVwNJR04DY07_AQADAgADeAADPQQ"
@@ -195,6 +195,7 @@ listings_db = {
 }
 
 pinned_index_message_id = None
+backup_pinned_message_id = None  # Pembolehubah untuk simpan ID mesej backup yang dipin sebelum ini
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -317,6 +318,7 @@ async def load_data_from_channel(app: Application):
 
     global listings_db
     global pinned_index_message_id
+    global backup_pinned_message_id
 
     try:
 
@@ -333,6 +335,7 @@ async def load_data_from_channel(app: Application):
             filename = pinned.document.file_name or ""
             if filename.lower().endswith(".json"):
                 target_document = pinned.document
+                backup_pinned_message_id = pinned.message_id  # Simpan ID mesej yang dipin sekarang
                 print("📌 Dokumen JSON dijumpai melalui Pinned Message.")
 
         if not target_document:
@@ -409,15 +412,14 @@ def save_data():
 
 
 # =============================================================
-# BACKUP TO TELEGRAM CHANNEL
+# BACKUP TO TELEGRAM CHANNEL (AUTO UNPIN & DELETE PREVIOUS)
 # =============================================================
 
 async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
-
+    global backup_pinned_message_id
     save_data()
 
     try:
-
         data_to_send = {
             "version": 1,
             "saved_at": datetime.now(TIMEZONE).isoformat(),
@@ -435,6 +437,7 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         file_doc = io.BytesIO(json_bytes)
         file_doc.name = DB_FILE
 
+        # 1. Hantar fail backup baharu ke channel backup
         sent_msg = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
@@ -445,19 +448,43 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             ),
         )
 
+        new_msg_id = sent_msg.message_id
+
+        # 2. Pin mesej backup baharu
         try:
             await context.bot.pin_chat_message(
                 chat_id=BACKUP_CHANNEL_ID,
-                message_id=sent_msg.message_id,
+                message_id=new_msg_id,
             )
         except Exception as pin_error:
-            print(f"⚠️ Gagal pin backup: {pin_error}")
+            print(f"⚠️ Gagal pin backup baharu: {pin_error}")
 
-        print("☁️ Backup berjaya dihantar ke Telegram Channel.")
+        # 3. Unpin dan Delete mesej backup yang lama (jika ada)
+        if backup_pinned_message_id and backup_pinned_message_id != new_msg_id:
+            try:
+                await context.bot.unpin_chat_message(
+                    chat_id=BACKUP_CHANNEL_ID,
+                    message_id=backup_pinned_message_id,
+                )
+            except Exception as unpin_err:
+                print(f"⚠️ Nota unpin mesej lama: {unpin_err}")
+
+            try:
+                await context.bot.delete_message(
+                    chat_id=BACKUP_CHANNEL_ID,
+                    message_id=backup_pinned_message_id,
+                )
+                print("🗑️ Mesej backup lama berjaya dipadam dari channel.")
+            except Exception as del_err:
+                print(f"⚠️ Nota padam mesej lama: {del_err}")
+
+        # Kemas kini ID pin kepada yang baharu
+        backup_pinned_message_id = new_msg_id
+
+        print("☁️ Backup baharu berjaya dihantar dan dipinn ke Telegram Channel.")
         return True
 
     except Exception as e:
-
         print(f"❌ Gagal backup ke channel: {e}")
         return False
 
