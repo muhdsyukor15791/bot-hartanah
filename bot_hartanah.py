@@ -181,30 +181,38 @@ async def load_data_from_channel(app: Application):
 
     try:
 
-        print("🔄 Membaca pinned backup JSON dari Telegram Channel...")
+        print("🔄 Membaca backup JSON dari Telegram Channel...")
 
         chat = await app.bot.get_chat(
             chat_id=BACKUP_CHANNEL_ID
         )
 
+        target_document = None
+
+        # 1. Cuba ambil daripada Pinned Message dahulu
         pinned = chat.pinned_message
+        if pinned and pinned.document:
+            filename = pinned.document.file_name or ""
+            if filename.lower().endswith(".json"):
+                target_document = pinned.document
+                print("📌 Dokumen JSON dijumpai melalui Pinned Message.")
 
-        if not pinned:
-            print("⚠️ Tiada pinned message dalam Backup Channel.")
+        # 2. Jika tiada pinned message, semak sejarah mesej terkini dalam channel
+        if not target_document:
+            print("⚠️ Tiada pinned JSON, menyemak mesej dokumen terkini dalam channel...")
+            async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=10):
+                if message.document:
+                    fname = message.document.file_name or ""
+                    if fname.lower().endswith(".json"):
+                        target_document = message.document
+                        print(f"📄 Dokumen JSON dijumpai dari sejarah channel: {fname}")
+                        break
+
+        if not target_document:
+            print("⚠️ Tiada fail JSON dijumpai dalam Backup Channel.")
             return False
 
-        if not pinned.document:
-            print("⚠️ Pinned message bukan dokumen JSON.")
-            return False
-
-        filename = pinned.document.file_name or ""
-
-        if not filename.lower().endswith(".json"):
-            print("⚠️ Pinned document bukan fail JSON.")
-            return False
-
-        telegram_file = await pinned.document.get_file()
-
+        telegram_file = await target_document.get_file()
         file_bytes = await telegram_file.download_as_bytearray()
 
         data = json.loads(
@@ -214,6 +222,10 @@ async def load_data_from_channel(app: Application):
         loaded_db = validate_database(
             data.get("listings", {})
         )
+
+        if not loaded_db:
+            print("⚠️ Data listing dalam backup kosong.")
+            return False
 
         # Gantikan database RAM dengan backup terkini
         listings_db = loaded_db
@@ -746,7 +758,6 @@ async def button_handler(
             "🔄 Sedang menyegarkan semula index group..."
         )
 
-        # Muat semula data daripada fail JSON tempatan yang selamat tanpa konflik getUpdates
         loaded_local = load_local_database()
 
         if not loaded_local and not listings_db:
@@ -978,7 +989,6 @@ async def button_handler(
 
         listings_db.pop(l_id, None)
 
-        # Kekalkan fungsi reindex asal
         await reindex_listings()
 
         save_data()
@@ -1001,10 +1011,6 @@ async def handle_message(
 ):
 
     state = context.user_data.get("state")
-
-    # ---------------------------------------------------------
-    # UPDATE PRICE
-    # ---------------------------------------------------------
 
     if state == "WAITING_FOR_NEW_PRICE":
 
@@ -1040,10 +1046,6 @@ async def handle_message(
             )
 
         return
-
-    # ---------------------------------------------------------
-    # UPDATE DESCRIPTION
-    # ---------------------------------------------------------
 
     elif state == "WAITING_FOR_NEW_DESC":
 
@@ -1087,10 +1089,6 @@ async def handle_message(
             )
 
         return
-
-    # ---------------------------------------------------------
-    # ADD NEW LISTING
-    # ---------------------------------------------------------
 
     elif state == "WAITING_FOR_LISTING_PHOTOS":
 
@@ -1317,10 +1315,10 @@ async def post_init(app: Application):
 
     print("🚀 Bot sedang memulakan sistem database...")
 
-    # Cuba baca backup channel dahulu
+    # Cuba baca daripada channel backup (Pinned / Sejarah Mesej)
     loaded = await load_data_from_channel(app)
 
-    # Jika gagal, gunakan local JSON
+    # Jika gagal, gunakan local JSON sebagai fallback
     if not loaded:
 
         print("⚠️ Menggunakan local database sebagai fallback.")
@@ -1340,7 +1338,6 @@ async def post_init(app: Application):
 
 def main():
 
-    # Web server untuk hosting
     server_thread = threading.Thread(
         target=run_web_server,
         daemon=True,
