@@ -47,11 +47,31 @@ async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
         print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
-        # Semak sehingga 50 mesej ke belakang untuk pastikan fail JSON dijumpai
-        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=50):
+        
+        # 1. Cuba ambil terus daripada Pinned Message di Channel Backup (Pantas & Tepat)
+        try:
+            chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
+            if chat.pinned_message and chat.pinned_message.document:
+                doc = chat.pinned_message.document
+                file_name = doc.file_name or ""
+                if file_name.endswith('.json') or 'json' in file_name.lower() or DB_FILE in file_name:
+                    file = await doc.get_file()
+                    file_bytes = await file.download_as_bytearray()
+                    
+                    data = json.loads(file_bytes.decode('utf-8'))
+                    raw_listings = data.get('listings', {})
+                    if raw_listings:
+                        listings_db = {int(k): v for k, v in raw_listings.items()}
+                        pinned_index_message_id = data.get('pinned_index_message_id')
+                        print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Pinned Message Channel!")
+                        return
+        except Exception as pin_check_err:
+            print(f"⚠️ Nota semakan pinned message: {pin_check_err}")
+
+        # 2. Fallback: Semak sejarah mesej jika pinned message tiada / gagal
+        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=30):
             if message.document:
                 file_name = message.document.file_name or ""
-                # Longgarkan syarat: Terima apa sahaja fail berformat .json atau mengandungi 'data'
                 if file_name.endswith('.json') or 'json' in file_name.lower() or DB_FILE in file_name:
                     try:
                         file = await message.document.get_file()
@@ -60,16 +80,15 @@ async def load_data_from_channel(app: Application):
                         data = json.loads(file_bytes.decode('utf-8'))
                         raw_listings = data.get('listings', {})
                         
-                        if raw_listings:  # Pastikan data listing tidak kosong
+                        if raw_listings:
                             listings_db = {int(k): v for k, v in raw_listings.items()}
                             pinned_index_message_id = data.get('pinned_index_message_id')
-                            print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
+                            print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Sejarah Channel!")
                             return
                     except Exception as parse_err:
-                        print(f"⚠️ Gagal baca fail ini ({file_name}), cuba fail seterusnya: {parse_err}")
                         continue
 
-        # Fallback ke fail tempatan jika ada
+        # 3. Fallback terakhir ke fail tempatan jika ada
         if os.path.exists(DB_FILE):
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
@@ -114,12 +133,26 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         file_doc = io.BytesIO(data_to_send)
         file_doc.name = DB_FILE
 
-        await context.bot.send_document(
+        sent_msg = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
-            caption="📦 **Auto-Backup Listing Data (Terkini)**"
+            caption=(
+                f"📦 **Auto-Backup Listing Data (Terkini)**\n"
+                f"Tarikh: {datetime.now(ZoneInfo('Asia/Kuala_Lumpur')).strftime('%d/%m/%Y %I:%M %p')}\n"
+                f"Jumlah Listing: {len(listings_db)}"
+            )
         )
-        print("☁️ Data berjaya di-backup ke Telegram Channel!")
+        
+        # Auto-pin mesej backup baru di channel backup supaya sentiasa berada di atas!
+        try:
+            await context.bot.pin_chat_message(
+                chat_id=BACKUP_CHANNEL_ID,
+                message_id=sent_msg.message_id
+            )
+        except Exception as pin_err:
+            print(f"⚠️ Gagal pin mesej di backup channel: {pin_err}")
+
+        print("☁️ Data berjaya di-backup & dipinn ke Telegram Channel!")
     except Exception as e:
         print(f"⚠️ Gagal backup ke Telegram Channel: {e}")
 
@@ -196,7 +229,7 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 message_id=pinned_index_message_id
             )
         except Exception as e:
-            print(f"⚠️ Nota pin mesej index: {e}")
+            print(f"⚠️ Nota pin mesej index di group: {e}")
 
         if old_pinned_id and old_pinned_id != pinned_index_message_id:
             try:
@@ -469,7 +502,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama mempunyai kapsyen.")
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen.")
                     return
 
                 lines = caption_text.split('\n')
@@ -558,8 +591,13 @@ def main():
 
     request = HTTPXRequest(read_timeout=60.0, write_timeout=60.0, connect_timeout=60.0, pool_timeout=60.0)
     
-    app = Application.builder().token(API_TOKEN).request(request).build()
-    app.post_init = load_data_from_channel
+    app = (
+        Application.builder()
+        .token(API_TOKEN)
+        .request(request)
+        .post_init(load_data_from_channel)
+        .build()
+    )
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
