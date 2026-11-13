@@ -46,49 +46,26 @@ def run_web_server():
 async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
-        print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
+        print("🔄 Sedang memuatkan data daripada Pinned Message Channel Backup...")
         
-        # 1. Cuba ambil terus daripada Pinned Message di Channel Backup (Pantas & Tepat)
-        try:
-            chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
-            if chat.pinned_message and chat.pinned_message.document:
-                doc = chat.pinned_message.document
-                file_name = doc.file_name or ""
-                if file_name.endswith('.json') or 'json' in file_name.lower() or DB_FILE in file_name:
-                    file = await doc.get_file()
-                    file_bytes = await file.download_as_bytearray()
-                    
-                    data = json.loads(file_bytes.decode('utf-8'))
-                    raw_listings = data.get('listings', {})
-                    if raw_listings:
-                        listings_db = {int(k): v for k, v in raw_listings.items()}
-                        pinned_index_message_id = data.get('pinned_index_message_id')
-                        print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Pinned Message Channel!")
-                        return
-        except Exception as pin_check_err:
-            print(f"⚠️ Nota semakan pinned message: {pin_check_err}")
+        # Ambil terus maklumat channel dan dokumen yang dipinn (Pinned Message)
+        chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
+        
+        if chat.pinned_message and chat.pinned_message.document:
+            doc = chat.pinned_message.document
+            file = await doc.get_file()
+            file_bytes = await file.download_as_bytearray()
+            
+            data = json.loads(file_bytes.decode('utf-8'))
+            raw_listings = data.get('listings', {})
+            
+            if raw_listings:
+                listings_db = {int(k): v for k, v in raw_listings.items()}
+                pinned_index_message_id = data.get('pinned_index_message_id')
+                print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Pinned Message Channel!")
+                return
 
-        # 2. Fallback: Semak sejarah mesej jika pinned message tiada / gagal
-        async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=30):
-            if message.document:
-                file_name = message.document.file_name or ""
-                if file_name.endswith('.json') or 'json' in file_name.lower() or DB_FILE in file_name:
-                    try:
-                        file = await message.document.get_file()
-                        file_bytes = await file.download_as_bytearray()
-                        
-                        data = json.loads(file_bytes.decode('utf-8'))
-                        raw_listings = data.get('listings', {})
-                        
-                        if raw_listings:
-                            listings_db = {int(k): v for k, v in raw_listings.items()}
-                            pinned_index_message_id = data.get('pinned_index_message_id')
-                            print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Sejarah Channel!")
-                            return
-                    except Exception as parse_err:
-                        continue
-
-        # 3. Fallback terakhir ke fail tempatan jika ada
+        # Fallback ke fail tempatan jika ada
         if os.path.exists(DB_FILE):
             with open(DB_FILE, 'r') as f:
                 data = json.load(f)
@@ -143,7 +120,7 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             )
         )
         
-        # Auto-pin mesej backup baru di channel backup supaya sentiasa berada di atas!
+        # Auto-pin mesej backup baru di channel backup
         try:
             await context.bot.pin_chat_message(
                 chat_id=BACKUP_CHANNEL_ID,
