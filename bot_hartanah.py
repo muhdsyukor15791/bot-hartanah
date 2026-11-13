@@ -18,7 +18,7 @@ from telegram.ext import (
 )
 
 # -------------------------------------------------------------
-API_TOKEN = "8924536875:AAHOATpmmc6l-zJV8efdI5TLaedk7GCnbho"
+API_TOKEN = "8924536875:AAHiCoNNZaxMO8Ud2Xozvsbef3oRD8VfBy8"
 GROUP_CHAT_ID = -1003288686118
 BACKUP_CHANNEL_ID = -5119617442
 
@@ -467,94 +467,4 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     saved_id = get_next_listing_id()
 
                     short_media_caption = (
-                        f"📢 **NEW LISTING!** (ID #{saved_id})\n"
-                        f"📍 **{title}**\n"
-                        f"💰 Harga/Sewa: {price}\n"
-                        f"*(Maklumat lanjut di bawah 👇)*"
-                    )
-
-                    full_desc_message = (
-                        f"📄 **MAKLUMAT LANJUT (ID #{saved_id})**\n\n"
-                        f"📍 **{title}**\n"
-                        f"💰 **{price}**\n\n"
-                        f"{desc}"
-                    )
-
-                    group_message_ids = []
-                    try:
-                        read_opts = {"read_timeout": 60.0, "write_timeout": 60.0, "connect_timeout": 60.0}
-
-                        if len(photos) > 1:
-                            media_list = [InputMediaPhoto(media=photos[0], caption=short_media_caption, parse_mode="Markdown")]
-                            for p_id in photos[1:]:
-                                media_list.append(InputMediaPhoto(media=p_id))
-                            
-                            sent_msgs = await context.bot.send_media_group(chat_id=GROUP_CHAT_ID, media=media_list, **read_opts)
-                            for msg in sent_msgs:
-                                group_message_ids.append(msg.message_id)
-                        else:
-                            sent_msg = await context.bot.send_photo(
-                                chat_id=GROUP_CHAT_ID,
-                                photo=photos[0],
-                                caption=short_media_caption,
-                                parse_mode="Markdown",
-                                **read_opts
-                            )
-                            group_message_ids.append(sent_msg.message_id)
-
-                        desc_sent_msg = await context.bot.send_message(
-                            chat_id=GROUP_CHAT_ID,
-                            text=full_desc_message,
-                            parse_mode="Markdown",
-                            disable_web_page_preview=True,
-                            **read_opts
-                        )
-                        group_message_ids.append(desc_sent_msg.message_id)
-
-                    except Exception as e:
-                        print(f"❌ Ralat hantar ke group: {e}")
-                        await update.message.reply_text(f"❌ Ralat teknikal menghantar ke group: {e}")
-                        return
-
-                    listings_db[saved_id] = {
-                        "photos": photos,
-                        "title": title,
-                        "price": price,
-                        "desc": desc,
-                        "status": "ACTIVE",
-                        "group_message_ids": group_message_ids
-                    }
-
-                    context.user_data.clear()
-                    await update_index_page(context)
-                    await update.message.reply_text(f"✅ Listing #${saved_id} berjaya disimpan, dihantar ke group, dan data di-backup ke channel!")
-                else:
-                    await update.message.reply_text("⚠️ Format kapsyen perlukan sekurang-kurangnya 3 baris.")
-            else:
-                if not context.user_data.get('temp_caption'):
-                    context.user_data['temp_caption'] = update.message.text
-                    await update.message.reply_text("📝 Kapsyen diterima! Sekarang hantar gambar atau taip **DONE**.")
-                else:
-                    await update.message.reply_text("Sila hantar gambar seterusnya atau taip **DONE** untuk selesai.")
-    else:
-        await update.message.reply_text("Sila hantar /start untuk membuka semula menu utama.")
-
-def main():
-    server_thread = threading.Thread(target=run_web_server, daemon=True)
-    server_thread.start()
-
-    # Tetapkan timeout HTTP 60 saat supaya tidak berlaku timed out di Render
-    request = HTTPXRequest(read_timeout=60.0, write_timeout=60.0, connect_timeout=60.0, pool_timeout=60.0)
-    
-    app = Application.builder().token(API_TOKEN).request(request).build()
-    app.post_init = load_data_from_channel
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button_handler))
-    app.add_handler(MessageHandler(filters.PHOTO | filters.TEXT & ~filters.COMMAND, handle_message))
-
-    print("Bot Hartanah sedang berjalan...")
-    app.run_polling()
-
-if __name__ == '__main__':
-    main()
+                        f"📢 **NEW LISTING!** (ID #{saved_
