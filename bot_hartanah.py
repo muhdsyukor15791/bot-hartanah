@@ -85,9 +85,9 @@ listings_db = {
             "AgACAgUAAxkBAAICAWrzQB8hyqlZo9_cbVDtddZOzmIuAAJZFmsbpbCYV6tj-V3_dmJCAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICAmrzQB_qMVohU9HhPx1ZP_ppkidhAAJaFmsbpbCYV9ojUJ_lykdnAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI EMAS, KAJANG 2",
         "price": "RM1,300 / bulan",
@@ -120,7 +120,7 @@ listings_db = {
             "AgACAgUAAxkBAAIDI2rzsf5c1jKKRh7qbcHaDKqZ3vprAALpE2sbpbCgVynyX_nWdlwlAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDJGrzsf6D6jtKaA7mFjzLscagbIMWAALqE2sbpbCgV5pMHZbOfdkaAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
         "price": "RM1,600 / bulan",
@@ -132,12 +132,12 @@ listings_db = {
         "photos": [
             "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDS2rzs6shI2Xnv8TChLt6Fm6ulkDKAAL3E2sbpbCgV16_Nu-N2Fy4AQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: APARTMENT KARISMA, ECO MAJESTIC, SEMENYIH | RM1,000",
@@ -154,7 +154,7 @@ listings_db = {
             "AgACAgUAAxkBAAIDYGrztFtW7dNJo4BfQ4KW37UO7QABTAAC-xNrG6WwoFcLTheMXzga6QEAAwIAA3gAAz0E",
             "AgACAgUAAxkBAAIDYWrztFvydrmxwISR0HPzmQwNy5P9AAL8E2sbpbCgV8GV_QcX53dQAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDYmrztFt_o1ei8aKWcdPlPcnOEtSiAAL9E2sbpbCgV8Ka6SzwNjSfAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDY2rztFu8OQfKDE0Qk88xFNG6zdaDAAL-E2sbpbCgV6gOsbMfsFbaAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDY2rztFu8OQfKDE0Qk88xFNG6zdaDAAL-E2sbpbCgV6gOsbMfsFbaAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDZGrztFuYN7Aqj4mk6YHiB7mcP9rBAAL_E2sbpbCgV8bGB5FZYpi-AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDZWrztFtn5rBvD90LwzfWMiLo093ZAAMUaxulsKBXe1gOQU8R-zQBAAMCAAN5AAM9BA",
             "AgACAgUAAxkBAAIDZmrztFtbgbjfXLmyKRggd1KxpRWTAAIBFGsbpbCgVwNJR04DY07_AQADAgADeAADPQQ"
@@ -1113,7 +1113,7 @@ async def post_init(app: Application):
         
         # 3. Jika local JSON pun tiada, biarkan kekal guna 9 listing hardcoded di atas
         if not loaded_local:
-            print(✅ Menggunakan hardcoded default database (9 listing aktif).)
+            print("✅ Menggunakan hardcoded default database (9 listing aktif).")
             save_data()
 
     print("======================================")
