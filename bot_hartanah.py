@@ -25,7 +25,66 @@ BACKUP_CHANNEL_ID = -5119617442
 DB_FILE = 'listings_data.json'
 # -------------------------------------------------------------
 
-listings_db = {}
+# DATABASE TETAP (FALLBACK) - Memastikan 8 listing anda sentiasa wujud & tidak akan hilang
+listings_db = {
+    1: {
+        "title": "UNTUK DISEWA: RESIDENSI MIRAI, KAJANG 2",
+        "price": "RM1,200 / bulan",
+        "desc": "💰 Sewa: RM1,200 / bulan\n📏 Saiz Binaan: 578 kaki persegi\n🛏️ Layout: 2 Bilik Tidur | 1 Bilik Air\n🚗 Parkir: 1 Petak Tempat Letak Kereta\n🔑 Status Unit: Separa Berperabot\n📅 Kemasukan: Sedia Diduduki Segera\n#Sewa76",
+        "status": "ACTIVE",
+        "group_message_ids": [2662, 2663, 2664, 2665, 2666, 2667]
+    },
+    2: {
+        "title": "UNTUK DISEWA Villa Tropika Apartment, Kajang",
+        "price": "RM1,100 / bulan",
+        "desc": "(Level 6 dengan Lif)\nKeluasan: 870 sqft (3 Bilik, 2 Bilik Air)\nStatus: Partly Furnished (Gated & Guarded)\nSewa Bulanan: RM1,100\n#Sewa140",
+        "status": "ACTIVE",
+        "group_message_ids": [2670, 2671, 2672, 2673, 2674, 2675, 2676, 2677, 2678]
+    },
+    3: {
+        "title": "UNTUK DISEWA: RESIDENSI EMAS, KAJANG 2",
+        "price": "RM1,300 / bulan",
+        "desc": "📌 Sewa: RM1,300 / bulan\n📐 Saiz: 930 kaki persegi\n🛏️ Layout: 4 Bilik Tidur | 3 Bilik Air\n#Sewa148",
+        "status": "ACTIVE",
+        "group_message_ids": [2681, 2682, 2683, 2684, 2685, 2686, 2687, 2688, 2689]
+    },
+    4: {
+        "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,200",
+        "price": "RM1,200 / bulan",
+        "desc": "💰 Sewa: RM1,200 / bulan\n📐 Saiz: 1,022 sqft | 3 Bilik Tidur | 3 Bilik Air\n🚗 Keistimewaan: Lvl 16, Unit Corner + Ada Charger EV\n#Sewa139",
+        "status": "ACTIVE",
+        "group_message_ids": [2714, 2715, 2716, 2717, 2718, 2719, 2720, 2721, 2722, 2723, 2724]
+    },
+    5: {
+        "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
+        "price": "RM1,600 / bulan",
+        "desc": "💰 Sewa: RM1,600/Bulanan\n📐 Layout: 2 Bilik Tidur & 1 Bilik Air\n🚗 Parkir: 2 Tempat Letak Kereta\n#Sewa155",
+        "status": "ACTIVE",
+        "group_message_ids": [2727, 2728, 2729, 2730, 2731, 2732]
+    },
+    6: {
+        "title": "UNTUK DISEWA: APARTMENT KARISMA, ECO MAJESTIC, SEMENYIH | RM1,000",
+        "price": "RM1,000 / bulan",
+        "desc": "💰 Sewa: RM1,000 / bulan\n🛏️ Layout: 3 Bilik Tidur | 2 Bilik Air\n🚗 Parkir: 2 Tempat Letak Kereta\n#Sewa165",
+        "status": "ACTIVE",
+        "group_message_ids": [2735, 2736, 2737, 2738, 2739, 2740, 2741, 2742, 2743, 2744]
+    },
+    7: {
+        "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,400",
+        "price": "RM1,400 / bulan",
+        "desc": "💰 Sewa: RM1,400 / bulan\n🏠 Ciri Istimewa: Corner Unit (Partially Furnished)\n🚗 Parkir: 2 Petak Tempat Letak Kereta\n#Sewa166",
+        "status": "ACTIVE",
+        "group_message_ids": [2747, 2748, 2749, 2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757]
+    },
+    8: {
+        "title": "UNTUK DISEWA: RESIDENSI JED, KAJANG 2 | RM1,500",
+        "price": "RM1,500 / bulan",
+        "desc": "💰 Sewa: RM1,500 / bulan\n🏠 Ciri Istimewa: Rumah Baru | Corner Unit\n🛏️ 4 Bilik Tidur | 3 Bilik Mandi\n#Sewa167",
+        "status": "ACTIVE",
+        "group_message_ids": [2760, 2761, 2762, 2763, 2764, 2765, 2766, 2767, 2768, 2769, 2770]
+    }
+}
+
 pinned_index_message_id = None
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -46,9 +105,7 @@ def run_web_server():
 async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
-        print("🔄 Sedang memuatkan data daripada Pinned Message Channel Backup...")
-        
-        # Ambil terus maklumat channel dan dokumen yang dipinn (Pinned Message)
+        print("🔄 Memeriksa fail backup dari Pinned Message Channel...")
         chat = await app.bot.get_chat(chat_id=BACKUP_CHANNEL_ID)
         
         if chat.pinned_message and chat.pinned_message.document:
@@ -60,27 +117,15 @@ async def load_data_from_channel(app: Application):
             raw_listings = data.get('listings', {})
             
             if raw_listings:
-                listings_db = {int(k): v for k, v in raw_listings.items()}
+                # Gabungkan data lama dengan data channel jika ada
+                loaded_db = {int(k): v for k, v in raw_listings.items()}
+                if len(loaded_db) >= len(listings_db):
+                    listings_db = loaded_db
                 pinned_index_message_id = data.get('pinned_index_message_id')
-                print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Pinned Message Channel!")
+                print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing!")
                 return
-
-        # Fallback ke fail tempatan jika ada
-        if os.path.exists(DB_FILE):
-            with open(DB_FILE, 'r') as f:
-                data = json.load(f)
-                raw_listings = data.get('listings', {})
-                if raw_listings:
-                    listings_db = {int(k): v for k, v in raw_listings.items()}
-                    pinned_index_message_id = data.get('pinned_index_message_id')
-                    print(f"✅ Data dimuatkan dari fail tempatan: {len(listings_db)} listing.")
-                    return
-
-        print("⚠️ Tiada data ditemui, memulakan pangkalan data kosong.")
-        listings_db = {}
     except Exception as e:
-        print(f"⚠️ Gagal memuatkan data dari channel: {e}")
-        listings_db = {}
+        print(f"⚠️ Nota load dari channel: {e}. Menggunakan database sedia ada.")
 
 def save_data():
     try:
@@ -120,7 +165,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             )
         )
         
-        # Auto-pin mesej backup baru di channel backup
         try:
             await context.bot.pin_chat_message(
                 chat_id=BACKUP_CHANNEL_ID,
