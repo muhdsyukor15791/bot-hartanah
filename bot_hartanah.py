@@ -1,4 +1,3 @@
-
 import logging
 import json
 import os
@@ -216,16 +215,6 @@ async def load_data_from_channel(app: Application):
             data.get("listings", {})
         )
 
-        # Pastikan backup mengandungi 9 listing asal
-        if len(loaded_db) < 9 or 9 not in loaded_db:
-
-            print(
-                "⚠️ Backup tidak lengkap. "
-                "Sekurang-kurangnya 9 listing diperlukan."
-            )
-
-            return False
-
         # Gantikan database RAM dengan backup terkini
         listings_db = loaded_db
 
@@ -370,8 +359,6 @@ def get_display_price(item):
     if price:
         return price
 
-    # Sesetengah listing dalam JSON menyimpan harga
-    # di dalam description dan bukan field price.
     text_to_check = (
         item.get("title", "")
         + "\n"
@@ -456,8 +443,6 @@ async def update_group_description(context, l_id):
 
     group_msg_ids = item.get("group_message_ids", [])
 
-    # ID #9 belum mempunyai mesej dalam group.
-    # Oleh itu, skip edit group tetapi kekalkan dalam database.
     if not group_msg_ids:
         print(f"ℹ️ Listing #{l_id} belum mempunyai mesej group.")
         return False
@@ -758,46 +743,35 @@ async def button_handler(
     elif data == "refresh_index":
 
         await query.message.reply_text(
-            "🔄 Sedang membaca pinned JSON terkini "
-            "daripada Backup Channel..."
+            "🔄 Sedang menyegarkan semula index group..."
         )
 
-        loaded = await load_data_from_channel(
-            context.application
-        )
+        # Muat semula data daripada fail JSON tempatan yang selamat tanpa konflik getUpdates
+        loaded_local = load_local_database()
 
-        if not loaded:
+        if not loaded_local and not listings_db:
 
             await query.message.reply_text(
-                "❌ Gagal membaca backup terkini.\n\n"
-                "Database sedia ada dikekalkan. "
-                "Sila semak pinned JSON dalam Backup Channel."
+                "❌ Gagal membaca database tempatan."
             )
 
             return
-
-        print(
-            f"📦 Jumlah listing dibaca: {len(listings_db)}"
-        )
 
         success = await update_index_page(context)
 
         if success:
 
             await query.message.reply_text(
-                "✅ INDEX BERJAYA DIKEMASKINI!\n\n"
+                "✅ INDEX BERJAYA DISEGARKAN!\n\n"
                 f"📦 Jumlah listing: {len(listings_db)}\n"
                 f"🟢 Listing ACTIVE: {get_active_count()}\n"
-                "📥 Data dibaca daripada Backup Channel.\n"
-                "📢 Index baharu dihantar ke group.\n"
-                "☁️ Backup terkini berjaya disimpan."
+                "📢 Index baharu telah dihantar ke group."
             )
 
         else:
 
             await query.message.reply_text(
-                "⚠️ Index telah diproses tetapi backup "
-                "mungkin gagal. Sila semak Telegram Channel."
+                "⚠️ Gagal mengemaskini index ke group. Sila cuba lagi."
             )
 
     # ---------------------------------------------------------
