@@ -47,20 +47,27 @@ async def load_data_from_channel(app: Application):
     global listings_db, pinned_index_message_id
     try:
         print("🔄 Sedang menyemak fail backup dari Telegram Channel...")
+        # Semak sehingga 50 mesej ke belakang untuk pastikan fail JSON dijumpai
         async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=50):
             if message.document:
-                if message.document.file_name and DB_FILE in message.document.file_name:
-                    file = await message.document.get_file()
-                    file_bytes = await file.download_as_bytearray()
-                    
-                    data = json.loads(file_bytes.decode('utf-8'))
-                    raw_listings = data.get('listings', {})
-                    
-                    if raw_listings:
-                        listings_db = {int(k): v for k, v in raw_listings.items()}
-                        pinned_index_message_id = data.get('pinned_index_message_id')
-                        print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
-                        return
+                file_name = message.document.file_name or ""
+                # Longgarkan syarat: Terima apa sahaja fail berformat .json atau mengandungi 'data'
+                if file_name.endswith('.json') or 'json' in file_name.lower() or DB_FILE in file_name:
+                    try:
+                        file = await message.document.get_file()
+                        file_bytes = await file.download_as_bytearray()
+                        
+                        data = json.loads(file_bytes.decode('utf-8'))
+                        raw_listings = data.get('listings', {})
+                        
+                        if raw_listings:  # Pastikan data listing tidak kosong
+                            listings_db = {int(k): v for k, v in raw_listings.items()}
+                            pinned_index_message_id = data.get('pinned_index_message_id')
+                            print(f"✅ Berjaya muat turun dan muatkan {len(listings_db)} listing dari Telegram Channel!")
+                            return
+                    except Exception as parse_err:
+                        print(f"⚠️ Gagal baca fail ini ({file_name}), cuba fail seterusnya: {parse_err}")
+                        continue
 
         # Fallback ke fail tempatan jika ada
         if os.path.exists(DB_FILE):
@@ -83,6 +90,9 @@ def save_data():
     try:
         with open(DB_FILE, 'w') as f:
             json.dump({
+                'version': 1,
+                'saved_at': datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).isoformat(),
+                'total_listings': len(listings_db),
                 'listings': listings_db,
                 'pinned_index_message_id': pinned_index_message_id
             }, f, indent=4)
@@ -94,6 +104,9 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
     save_data()
     try:
         data_to_send = json.dumps({
+            'version': 1,
+            'saved_at': datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).isoformat(),
+            'total_listings': len(listings_db),
             'listings': listings_db,
             'pinned_index_message_id': pinned_index_message_id
         }, indent=4).encode('utf-8')
@@ -456,7 +469,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     return
 
                 if not caption_text:
-                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama anda mempunyai kapsyen.")
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama mempunyai kapsyen.")
                     return
 
                 lines = caption_text.split('\n')
