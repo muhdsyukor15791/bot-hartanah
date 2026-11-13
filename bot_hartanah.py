@@ -30,7 +30,7 @@ from telegram.ext import (
 # CONFIGURATION
 # =============================================================
 
-API_TOKEN = os.environ.get("8924536875:AAHiCoNNZaxMO8Ud2Xozvsbef3oRD8VfBy8")
+API_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
 GROUP_CHAT_ID = -1003288686118
 BACKUP_CHANNEL_ID = -5119617442
