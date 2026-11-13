@@ -43,10 +43,157 @@ if not API_TOKEN:
     )
 
 # =============================================================
-# DATABASE
+# DATABASE (HARDCODED FALLBACK UNTUK 9 LISTING ANDA)
 # =============================================================
 
-listings_db = {}
+listings_db = {
+    1: {
+        "photos": [
+            "AgACAgUAAxkBAAOiavMFB08MUgHJkTIWiByrGvpzmucAArcVaxulsJhXkglu9VBbaOEBAAMCAAN4AAM9BA",
+            "AgACAgUAAxkBAAOjavMFBwirSYZqmYu66dw0hdfbBvQAArgVaxulsJhXXb-Pb6Mb0jwBAAMCAAN4AAM9BA",
+            "AgACAgUAAxkBAAOkavMFB1_R9ug5EzzFMZRZ8zYbU_0AArkVaxulsJhXGOE6Dumj7E8BAAMCAAN5AAM9BA",
+            "AgACAgUAAxkBAAOlavMFByRR4cNtvmRTQ31QczIed6YAAroVaxulsJhXij0t65CU5AkBAAMCAAN4AAM9BA",
+            "AgACAgUAAxkBAAOmavMFB9I2qXCa8vsvl0tKolXIVs4AArsVaxulsJhXVczPolVsYkIBAAMCAAN4AAM9BA"
+        ],
+        "title": "UNTUK DISEWA: RESIDENSI MIRAI, KAJANG 2",
+        "price": "RM1,200 / bulan",
+        "desc": "💰 Sewa: RM1,200 / bulan\n📏 Saiz Binaan: 578 kaki persegi\n🛏️ Layout: 2 Bilik Tidur | 1 Bilik Air\n🚗 Parkir: 1 Petak Tempat Letak Kereta\n🔑 Status Unit: Separa Berperabot\n📅 Kemasukan: Sedia Diduduki Segera\n#Sewa76",
+        "status": "ACTIVE",
+        "group_message_ids": [2662, 2663, 2664, 2665, 2666, 2667]
+    },
+    2: {
+        "photos": [
+            "AgACAgUAAxkBAAIBs2rzM-ci9zwhglf4emB81USd55kCAAI2FmsbpbCYVzL-DPUVkA8xAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIBtGrzM-etu4KOnJuvZERVYBVkJ32uAAI3FmsbpbCYV9GW1x2TSmitAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIBtWrzM-cKgwh_oEbnWEaRwMvb5D07AAI4FmsbpbCYV6HGTdJPz6ugAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIBtmrzM-e6og-AvOe1CAWj5WM0ojuIAAI5FmsbpbCYVyi_qq1csCz7AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIBuWrzM-ctAk6RrqaB8SHUsjxMEj37AAI8FmsbpbCYV9U3CchYwDuAAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIBumrzM-eHPTg65eYKlEQJd75NzOtcAAI9FmsbpbCYV2ARUXxSp-L5AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIBt2rzM-fZ-sjjvHIn9ERMLHsSaXH5AAI6FmsbpbCYV2hEnZNlp45SAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIBuGrzM-eSwU5jEh4_GjJmrpwGA6uRAAI7FmsbpbCYVz2ef6nD5yR8AQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA Villa Tropika Apartment, Kajang",
+        "price": "RM1,100 / bulan",
+        "desc": "(Level 6 dengan Lif)\nKeluasan: 870 sqft (3 Bilik, 2 Bilik Air)\nStatus: Partly Furnished (Gated & Guarded)\nSewa Bulanan: RM1,100\n#Sewa140",
+        "status": "ACTIVE",
+        "group_message_ids": [2670, 2671, 2672, 2673, 2674, 2675, 2676, 2677, 2678]
+    },
+    3: {
+        "photos": [
+            "AgACAgUAAxkBAAIB_2rzQB_HoqKvxiHDHgJEOQ3IvL-AAAJUFmsbpbCYV7hY1PWFKsYZAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICAAFq80AffEiZTWr9X2mL6HdITNoQSwACWBZrG6WwmFekxRhik3eEKAEAAwIAA3gAAz0E",
+            "AgACAgUAAxkBAAICAWrzQB8hyqlZo9_cbVDtddZOzmIuAAJZFmsbpbCYV6tj-V3_dmJCAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICAmrzQB_qMVohU9HhPx1ZP_ppkidhAAJaFmsbpbCYV9ojUJ_lykdnAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: RESIDENSI EMAS, KAJANG 2",
+        "price": "RM1,300 / bulan",
+        "desc": "📌 Sewa: RM1,300 / bulan\n📐 Saiz: 930 kaki persegi\n🛏️ Layout: 4 Bilik Tidur | 3 Bilik Air\n#Sewa148",
+        "status": "ACTIVE",
+        "group_message_ids": [2681, 2682, 2683, 2684, 2685, 2686, 2687, 2688, 2689]
+    },
+    4: {
+        "photos": [
+            "AgACAgUAAxkBAAIC1Grzr0fG_052frLRuZ6RhEzFHqROAALcE2sbpbCgVzLpDBeiwTeFAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC1Wrzr0fb7NQBa5yqsRcmQb6Dxx41AALdE2sbpbCgV3fTj5eszwXJAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC1mrzr0dH1z5Jmmz__Y4uNd-0uow_AALeE2sbpbCgV-PW62CIaNjcAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC2Grzr0c4-OzrpZ2c2AphMnRfXrmpAALgE2sbpbCgV2KJW0fpEHB2AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC2Wrzr0fOS_cJoNzlN2KCTabDpm76AALhE2sbpbCgVy-7cAXCE1VbAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC3Grzr0eVkgIFKamDHWy8owrsSmJYAALkE2sbpbCgV362wBr-0J3HAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,200",
+        "price": "RM1,200 / bulan",
+        "desc": "💰 Sewa: RM1,200 / bulan\n📐 Saiz: 1,022 sqft | 3 Bilik Tidur | 3 Bilik Air\n🚗 Keistimewaan: Lvl 16, Unit Corner + Ada Charger EV\n#Sewa139",
+        "status": "ACTIVE",
+        "group_message_ids": [2714, 2715, 2716, 2717, 2718, 2719, 2720, 2721, 2722, 2723, 2724]
+    },
+    5: {
+        "photos": [
+            "AgACAgUAAxkBAAIDImrzsf5O5-JesbEuMHkUCk4Ul3HPAALoE2sbpbCgV5Wr5TyolNBdAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDI2rzsf5c1jKKRh7qbcHaDKqZ3vprAALpE2sbpbCgVynyX_nWdlwlAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDJGrzsf6D6jtKaA7mFjzLscagbIMWAALqE2sbpbCgV5pMHZbOfdkaAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
+        "price": "RM1,600 / bulan",
+        "desc": "💰 Sewa: RM1,600/Bulanan\n📐 Layout: 2 Bilik Tidur & 1 Bilik Air\n🚗 Parkir: 2 Tempat Letak Kereta\n#Sewa155",
+        "status": "ACTIVE",
+        "group_message_ids": [2727, 2728, 2729, 2730, 2731, 2732]
+    },
+    6: {
+        "photos": [
+            "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDS2rzs6shI2Xnv8TChLt6Fm6ulkDKAAL3E2sbpbCgV16_Nu-N2Fy4AQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: APARTMENT KARISMA, ECO MAJESTIC, SEMENYIH | RM1,000",
+        "price": "RM1,000 / bulan",
+        "desc": "💰 Sewa: RM1,000 / bulan\n🛏️ Layout: 3 Bilik Tidur | 2 Bilik Air\n🚗 Parkir: 2 Tempat Letak Kereta\n#Sewa165",
+        "status": "ACTIVE",
+        "group_message_ids": [2735, 2736, 2737, 2738, 2739, 2740, 2741, 2742, 2743, 2744]
+    },
+    7: {
+        "photos": [
+            "AgACAgUAAxkBAAIDXWrztFv-H6T0fQfBMQzNV3ru3zVKAAL4E2sbpbCgV1-9OU3gjWtUAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDXmrztFsJ6RYKUni7t59t_utKrSsOAAL5E2sbpbCgV5s0O6ouYEo4AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDX2rztFtGtZTZIbMO03MXyfZoAAGJXQAC-hNrG6WwoFdeR9Aiol9bMQEAAwIAA3gAAz0E",
+            "AgACAgUAAxkBAAIDYGrztFtW7dNJo4BfQ4KW37UO7QABTAAC-xNrG6WwoFcLTheMXzga6QEAAwIAA3gAAz0E",
+            "AgACAgUAAxkBAAIDYWrztFvydrmxwISR0HPzmQwNy5P9AAL8E2sbpbCgV8GV_QcX53dQAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDYmrztFt_o1ei8aKWcdPlPcnOEtSiAAL9E2sbpbCgV8Ka6SzwNjSfAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDY2rztFu8OQfKDE0Qk88xFNG6zdaDAAL-E2sbpbCgV6gOsbMfsFbaAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDZGrztFuYN7Aqj4mk6YHiB7mcP9rBAAL_E2sbpbCgV8bGB5FZYpi-AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDZWrztFtn5rBvD90LwzfWMiLo093ZAAMUaxulsKBXe1gOQU8R-zQBAAMCAAN5AAM9BA",
+            "AgACAgUAAxkBAAIDZmrztFtbgbjfXLmyKRggd1KxpRWTAAIBFGsbpbCgVwNJR04DY07_AQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,400 (Partial Furnished)",
+        "price": "RM1,400 / bulan",
+        "desc": "💰 Sewa: RM1,400 / bulan\n🏠 Ciri Istimewa: Corner Unit (Partially Furnished)\n🚗 Parkir: 2 Petak Tempat Letak Kereta\n#Sewa166",
+        "status": "ACTIVE",
+        "group_message_ids": [2747, 2748, 2749, 2750, 2751, 2752, 2753, 2754, 2755, 2756, 2757]
+    },
+    8: {
+        "photos": [
+            "AgACAgUAAxkBAAIDemrztWRQzRhUtPFKEKNW2IbEHOEpAAICFGsbpbCgV4wWY5T9l0vVAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDe2rztWSmf-eEMUigU4rM_1aH9vmoAAIDFGsbpbCgV6LTRWTOePPIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDfGrztWQIruBLF_TND-o-9UY29rInAAIEFGsbpbCgV94UbUvk_Th_AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDfWrztWR_2NsNvk3Lx5ILWmwENrQ-AAIFFGsbpbCgV8c4-NTodK-FAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDfmrztWQAAc8UNXnB--u0FKFGwLxlLgACBhRrG6WwoFfXtIYe_PCWogEAAwIAA3kAAz0E",
+            "AgACAgUAAxkBAAIDf2rztWSvVeMI60Mgf5jZ8U7AimhRAAIHFGsbpbCgV7egsqgL8R8YAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDgGrztWSUx2GAyttFisUW-gUP8a63AAIIFGsbpbCgV6EW9wqVgcOVAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDgWrztWREFKxw8jkrL0qN1yaa8z4mAAIJFGsbpbCgV4vvtS10ympiAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDgmrztWTZ-RhUREPOAAEiBdZSTz3IpAACChRrG6WwoFfQuf9G3vlwjwEAAwIAA3kAAz0E",
+            "AgACAgUAAxkBAAIDg2rztWTS2APIB-SaX2OV9IfbeoteAAILFGsbpbCgV-wOvNpLonFBAQADAgADeAADPQQ"
+        ],
+        "title": "UNTUK DISEWA: RESIDENSI JED, KAJANG 2 | RM1,500",
+        "price": "RM1,500 / bulan",
+        "desc": "💰 Sewa: RM1,500 / bulan\n🏠 Ciri Istimewa: Rumah Baru | Corner Unit\n🛏️ 4 Bilik Tidur | 3 Bilik Mandi\n#Sewa167",
+        "status": "ACTIVE",
+        "group_message_ids": [2760, 2761, 2762, 2763, 2764, 2765, 2766, 2767, 2768, 2769, 2770]
+    },
+    9: {
+        "photos": [],
+        "title": "UNTUK DISEWA: CANOPY HILLS, KAJANG | RM1,300",
+        "price": "RM1,300 / bulan",
+        "desc": "💰 Sewa: RM1,300 / bulan\n🏢 Blok & Saiz: Blok A (590 Sqft)\n🛏️ Layout: 2 Bilik Tidur | 1 Bilik Air\n🚗 Parkir: 1 Petak Tempat Letak Kereta\n🔑 Status Unit: Fully Furnished\n#Id9",
+        "status": "ACTIVE",
+        "group_message_ids": []
+    }
+}
+
 pinned_index_message_id = None
 
 logging.basicConfig(
@@ -138,7 +285,7 @@ def load_local_database():
     try:
 
         if not os.path.exists(DB_FILE):
-            print("⚠️ Fail JSON tempatan tidak dijumpai.")
+            print("⚠️ Fail JSON tempatan tidak dijumpai. Mengekalkan database asas.")
             return False
 
         with open(DB_FILE, "r", encoding="utf-8") as file:
@@ -148,21 +295,13 @@ def load_local_database():
             data.get("listings", {})
         )
 
-        if not loaded_db:
-            return False
+        if loaded_db:
+            listings_db = loaded_db
+            pinned_index_message_id = data.get("pinned_index_message_id")
+            print(f"✅ Local database berjaya dimuatkan: {len(listings_db)} listing.")
+            return True
 
-        listings_db = loaded_db
-
-        pinned_index_message_id = data.get(
-            "pinned_index_message_id"
-        )
-
-        print(
-            f"✅ Local database berjaya dimuatkan: "
-            f"{len(listings_db)} listing."
-        )
-
-        return True
+        return False
 
     except Exception as e:
 
@@ -189,7 +328,6 @@ async def load_data_from_channel(app: Application):
 
         target_document = None
 
-        # 1. Cuba ambil daripada Pinned Message dahulu
         pinned = chat.pinned_message
         if pinned and pinned.document:
             filename = pinned.document.file_name or ""
@@ -197,10 +335,8 @@ async def load_data_from_channel(app: Application):
                 target_document = pinned.document
                 print("📌 Dokumen JSON dijumpai melalui Pinned Message.")
 
-        # 2. Jika tiada pinned message, semak sejarah mesej terkini dalam channel
         if not target_document:
-            print("⚠️ Tiada pinned JSON, menyemak mesej dokumen terkini dalam channel...")
-            async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=10):
+            async for message in app.bot.get_chat_history(chat_id=BACKUP_CHANNEL_ID, limit=5):
                 if message.document:
                     fname = message.document.file_name or ""
                     if fname.lower().endswith(".json"):
@@ -209,7 +345,7 @@ async def load_data_from_channel(app: Application):
                         break
 
         if not target_document:
-            print("⚠️ Tiada fail JSON dijumpai dalam Backup Channel.")
+            print("⚠️ Tiada fail JSON dijumpai dalam Backup Channel. Menggunakan hardcoded database.")
             return False
 
         telegram_file = await target_document.get_file()
@@ -223,37 +359,18 @@ async def load_data_from_channel(app: Application):
             data.get("listings", {})
         )
 
-        if not loaded_db:
-            print("⚠️ Data listing dalam backup kosong.")
-            return False
+        if loaded_db:
+            listings_db = loaded_db
+            pinned_index_message_id = data.get("pinned_index_message_id")
+            print(f"✅ Berjaya muat turun {len(listings_db)} listing dari Channel!")
+            save_data()
+            return True
 
-        # Gantikan database RAM dengan backup terkini
-        listings_db = loaded_db
-
-        pinned_index_message_id = data.get(
-            "pinned_index_message_id"
-        )
-
-        active_count = sum(
-            1 for item in listings_db.values()
-            if item.get("status") == "ACTIVE"
-        )
-
-        print("======================================")
-        print("✅ BACKUP CHANNEL BERJAYA DIBACA")
-        print(f"📦 Jumlah listing: {len(listings_db)}")
-        print(f"🟢 Listing ACTIVE: {active_count}")
-        print("======================================")
-
-        # Simpan salinan tempatan
-        save_data()
-
-        return True
+        return False
 
     except Exception as e:
 
         print(f"❌ Gagal load backup channel: {e}")
-
         return False
 
 
@@ -283,13 +400,11 @@ def save_data():
             )
 
         print("💾 Database berjaya disimpan.")
-
         return True
 
     except Exception as e:
 
         print(f"❌ Gagal simpan database: {e}")
-
         return False
 
 
@@ -331,24 +446,19 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         )
 
         try:
-
             await context.bot.pin_chat_message(
                 chat_id=BACKUP_CHANNEL_ID,
                 message_id=sent_msg.message_id,
             )
-
         except Exception as pin_error:
-
             print(f"⚠️ Gagal pin backup: {pin_error}")
 
         print("☁️ Backup berjaya dihantar ke Telegram Channel.")
-
         return True
 
     except Exception as e:
 
         print(f"❌ Gagal backup ke channel: {e}")
-
         return False
 
 
@@ -587,7 +697,6 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
 
         old_pinned_id = pinned_index_message_id
 
-        # Hantar index baharu
         sent_msg = await context.bot.send_message(
             chat_id=GROUP_CHAT_ID,
             text=index_text,
@@ -597,29 +706,21 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
 
         pinned_index_message_id = sent_msg.message_id
 
-        # Simpan database dengan index ID terkini
         save_data()
 
-        # Backup database terkini
         backup_success = await backup_to_channel(context)
 
-        # Pin index baharu
         try:
-
             await context.bot.pin_chat_message(
                 chat_id=GROUP_CHAT_ID,
                 message_id=pinned_index_message_id,
             )
-
         except Exception as e:
-
             print(f"⚠️ Gagal pin index baharu: {e}")
 
-        # Padam index lama
         if old_pinned_id and old_pinned_id != pinned_index_message_id:
 
             try:
-
                 await context.bot.unpin_chat_message(
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id,
@@ -629,22 +730,15 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=GROUP_CHAT_ID,
                     message_id=old_pinned_id,
                 )
-
             except Exception as e:
-
                 print(f"⚠️ Gagal padam index lama: {e}")
 
-        print(
-            f"✅ Index berjaya dikemaskini. "
-            f"{len(listings_db)} listing."
-        )
-
+        print(f"✅ Index berjaya dikemaskini. {len(listings_db)} listing.")
         return backup_success
 
     except Exception as e:
 
         print(f"❌ Ralat update index: {e}")
-
         return False
 
 
@@ -657,48 +751,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
 
     keyboard = [
-
-        [
-            InlineKeyboardButton(
-                "➕ Tambah Listing Baru",
-                callback_data="add_listing",
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "✏️ Kemaskini Harga",
-                callback_data="edit_price_menu",
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "📝 Kemaskini Description",
-                callback_data="edit_desc_menu",
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🏷️ Set Status",
-                callback_data="set_status",
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🗑️ Padam Listing",
-                callback_data="delete_listing",
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "📢 Refresh Index",
-                callback_data="refresh_index",
-            )
-        ],
+        [InlineKeyboardButton("➕ Tambah Listing Baru", callback_data="add_listing")],
+        [InlineKeyboardButton("✏️ Kemaskini Harga", callback_data="edit_price_menu")],
+        [InlineKeyboardButton("📝 Kemaskini Description", callback_data="edit_desc_menu")],
+        [InlineKeyboardButton("🏷️ Set Status", callback_data="set_status")],
+        [InlineKeyboardButton("🗑️ Padam Listing", callback_data="delete_listing")],
+        [InlineKeyboardButton("📢 Refresh Index", callback_data="refresh_index")],
     ]
 
     await update.message.reply_text(
@@ -706,7 +764,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📦 Jumlah Listing: {len(listings_db)}\n"
         f"🟢 Listing ACTIVE: {get_active_count()}\n\n"
         "Pilih tindakan di bawah:",
-
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown",
     )
@@ -722,14 +779,8 @@ async def button_handler(
 ):
 
     query = update.callback_query
-
     await query.answer()
-
     data = query.data
-
-    # ---------------------------------------------------------
-    # ADD LISTING
-    # ---------------------------------------------------------
 
     if data == "add_listing":
 
@@ -739,8 +790,7 @@ async def button_handler(
 
         await query.message.reply_text(
             "📸 **Tambah Listing Baru:**\n\n"
-            "Hantar gambar hartanah berserta kapsyen "
-            "pada gambar pertama.\n\n"
+            "Hantar gambar hartanah berserta kapsyen pada gambar pertama.\n\n"
             "Format kapsyen:\n"
             "Baris 1: Tajuk Listing\n"
             "Baris 2: Harga\n"
@@ -748,105 +798,62 @@ async def button_handler(
             "Selepas selesai, taip **DONE**."
         )
 
-    # ---------------------------------------------------------
-    # REFRESH INDEX
-    # ---------------------------------------------------------
-
     elif data == "refresh_index":
 
         await query.message.reply_text(
             "🔄 Sedang menyegarkan semula index group..."
         )
 
-        loaded_local = load_local_database()
-
-        if not loaded_local and not listings_db:
-
-            await query.message.reply_text(
-                "❌ Gagal membaca database tempatan."
-            )
-
-            return
-
         success = await update_index_page(context)
 
         if success:
-
             await query.message.reply_text(
                 "✅ INDEX BERJAYA DISEGARKAN!\n\n"
                 f"📦 Jumlah listing: {len(listings_db)}\n"
                 f"🟢 Listing ACTIVE: {get_active_count()}\n"
                 "📢 Index baharu telah dihantar ke group."
             )
-
         else:
-
             await query.message.reply_text(
                 "⚠️ Gagal mengemaskini index ke group. Sila cuba lagi."
             )
 
-    # ---------------------------------------------------------
-    # EDIT PRICE MENU
-    # ---------------------------------------------------------
-
     elif data == "edit_price_menu":
 
         if not listings_db:
-
-            await query.message.reply_text(
-                "⚠️ Tiada listing."
-            )
-
+            await query.message.reply_text("⚠️ Tiada listing.")
             return
 
         await query.message.reply_text(
             "✏️ Pilih listing untuk dikemaskini harganya:",
-            reply_markup=get_listing_keyboard(
-                "editprice",
-                "Harga",
-            ),
+            reply_markup=get_listing_keyboard("editprice", "Harga"),
         )
 
     elif data.startswith("editprice_"):
 
         l_id = int(data.split("_")[1])
-
         if l_id not in listings_db:
             return
 
         context.user_data["editing_id"] = l_id
         context.user_data["state"] = "WAITING_FOR_NEW_PRICE"
 
-        await query.message.reply_text(
-            f"Sila taip harga baru untuk Listing #{l_id}:"
-        )
-
-    # ---------------------------------------------------------
-    # EDIT DESCRIPTION MENU
-    # ---------------------------------------------------------
+        await query.message.reply_text(f"Sila taip harga baru untuk Listing #{l_id}:")
 
     elif data == "edit_desc_menu":
 
         if not listings_db:
-
-            await query.message.reply_text(
-                "⚠️ Tiada listing."
-            )
-
+            await query.message.reply_text("⚠️ Tiada listing.")
             return
 
         await query.message.reply_text(
             "📝 Pilih listing untuk dikemaskini description:",
-            reply_markup=get_listing_keyboard(
-                "editdesc",
-                "Desc",
-            ),
+            reply_markup=get_listing_keyboard("editdesc", "Desc"),
         )
 
     elif data.startswith("editdesc_"):
 
         l_id = int(data.split("_")[1])
-
         if l_id not in listings_db:
             return
 
@@ -854,62 +861,30 @@ async def button_handler(
         context.user_data["state"] = "WAITING_FOR_NEW_DESC"
 
         await query.message.reply_text(
-            f"📝 Hantar description baru untuk Listing #{l_id}.\n\n"
-            "Boleh hantar teks biasa atau gambar berserta kapsyen."
+            f"📝 Hantar description baru untuk Listing #{l_id}."
         )
-
-    # ---------------------------------------------------------
-    # SET STATUS MENU
-    # ---------------------------------------------------------
 
     elif data == "set_status":
 
         if not listings_db:
-
-            await query.message.reply_text(
-                "⚠️ Tiada listing."
-            )
-
+            await query.message.reply_text("⚠️ Tiada listing.")
             return
 
         await query.message.reply_text(
             "🏷️ Pilih listing untuk dikemaskini status:",
-            reply_markup=get_listing_keyboard(
-                "status",
-                "Status",
-            ),
+            reply_markup=get_listing_keyboard("status", "Status"),
         )
 
     elif data.startswith("status_"):
 
         l_id = int(data.split("_")[1])
-
         if l_id not in listings_db:
             return
 
         keyboard = [
-
-            [
-                InlineKeyboardButton(
-                    "🟢 ACTIVE",
-                    callback_data=f"setstat_{l_id}_ACTIVE",
-                )
-            ],
-
-            [
-                InlineKeyboardButton(
-                    "🟡 BOOKED",
-                    callback_data=f"setstat_{l_id}_BOOKED",
-                )
-            ],
-
-            [
-                InlineKeyboardButton(
-                    "🔴 SOLD",
-                    callback_data=f"setstat_{l_id}_SOLD",
-                )
-            ],
-
+            [InlineKeyboardButton("🟢 ACTIVE", callback_data=f"setstat_{l_id}_ACTIVE")],
+            [InlineKeyboardButton("🟡 BOOKED", callback_data=f"setstat_{l_id}_BOOKED")],
+            [InlineKeyboardButton("🔴 SOLD", callback_data=f"setstat_{l_id}_SOLD")],
         ]
 
         await query.message.reply_text(
@@ -920,85 +895,48 @@ async def button_handler(
     elif data.startswith("setstat_"):
 
         _, l_id_str, new_status = data.split("_")
-
         l_id = int(l_id_str)
-
         if l_id not in listings_db:
             return
 
         listings_db[l_id]["status"] = new_status
-
         save_data()
-
-        await update_group_description(
-            context,
-            l_id,
-        )
-
-        success = await update_index_page(context)
+        await update_group_description(context, l_id)
+        await update_index_page(context)
 
         await query.message.reply_text(
-            f"✅ Status Listing #{l_id} ditukar kepada {new_status}.\n"
-            "Index dan database telah dikemaskini."
+            f"✅ Status Listing #{l_id} ditukar kepada {new_status}."
         )
-
-    # ---------------------------------------------------------
-    # DELETE LISTING MENU
-    # ---------------------------------------------------------
 
     elif data == "delete_listing":
 
         if not listings_db:
-
-            await query.message.reply_text(
-                "⚠️ Tiada listing."
-            )
-
+            await query.message.reply_text("⚠️ Tiada listing.")
             return
 
         await query.message.reply_text(
             "🗑️ Pilih listing untuk dipadam:",
-            reply_markup=get_listing_keyboard(
-                "del",
-                "Padam",
-            ),
+            reply_markup=get_listing_keyboard("del", "Padam"),
         )
 
     elif data.startswith("del_"):
 
         l_id = int(data.split("_")[1])
-
         if l_id not in listings_db:
             return
 
-        group_msg_ids = listings_db[l_id].get(
-            "group_message_ids", []
-        )
-
-        for msg_id in group_msg_ids:
-
+        for msg_id in listings_db[l_id].get("group_message_ids", []):
             try:
-
-                await context.bot.delete_message(
-                    chat_id=GROUP_CHAT_ID,
-                    message_id=msg_id,
-                )
-
+                await context.bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=msg_id)
             except Exception:
                 pass
 
         listings_db.pop(l_id, None)
-
         await reindex_listings()
-
         save_data()
-
         await update_index_page(context)
 
-        await query.message.reply_text(
-            "✅ Listing berjaya dipadam.\n"
-            "ID telah disusun semula secara automatik."
-        )
+        await query.message.reply_text("✅ Listing berjaya dipadam & ID disusun semula.")
 
 
 # =============================================================
@@ -1015,147 +953,75 @@ async def handle_message(
     if state == "WAITING_FOR_NEW_PRICE":
 
         if not update.message.text:
-
-            await update.message.reply_text(
-                "⚠️ Sila hantar teks harga sahaja."
-            )
-
+            await update.message.reply_text("⚠️ Sila hantar teks harga sahaja.")
             return
 
         new_price = update.message.text.strip()
-
         l_id = context.user_data.get("editing_id")
 
         if l_id in listings_db:
-
             listings_db[l_id]["price"] = new_price
-
             save_data()
-
-            await update_group_description(
-                context,
-                l_id,
-            )
-
+            await update_group_description(context, l_id)
             await update_index_page(context)
-
             context.user_data.clear()
-
-            await update.message.reply_text(
-                f"✅ Harga Listing #{l_id} berjaya dikemaskini!"
-            )
+            await update.message.reply_text(f"✅ Harga Listing #{l_id} berjaya dikemaskini!")
 
         return
 
     elif state == "WAITING_FOR_NEW_DESC":
 
-        new_desc = None
-
-        if update.message.text:
-
-            new_desc = update.message.text.strip()
-
-        elif update.message.caption:
-
-            new_desc = update.message.caption.strip()
+        new_desc = update.message.text.strip() if update.message.text else (update.message.caption.strip() if update.message.caption else None)
 
         if not new_desc:
-
-            await update.message.reply_text(
-                "⚠️ Tiada teks atau kapsyen dikesan."
-            )
-
+            await update.message.reply_text("⚠️ Tiada teks atau kapsyen dikesan.")
             return
 
         l_id = context.user_data.get("editing_desc_id")
 
         if l_id in listings_db:
-
             listings_db[l_id]["desc"] = new_desc
-
             save_data()
-
-            await update_group_description(
-                context,
-                l_id,
-            )
-
+            await update_group_description(context, l_id)
             await update_index_page(context)
-
             context.user_data.clear()
-
-            await update.message.reply_text(
-                f"✅ Description Listing #{l_id} berjaya dikemaskini!"
-            )
+            await update.message.reply_text(f"✅ Description Listing #{l_id} dikemaskini!")
 
         return
 
     elif state == "WAITING_FOR_LISTING_PHOTOS":
 
         if update.message.photo:
-
             photo_file_id = update.message.photo[-1].file_id
+            context.user_data["temp_photos"].append(photo_file_id)
 
-            context.user_data["temp_photos"].append(
-                photo_file_id
-            )
-
-            if (
-                update.message.caption
-                and not context.user_data.get("temp_caption")
-            ):
-
-                context.user_data["temp_caption"] = (
-                    update.message.caption
-                )
+            if update.message.caption and not context.user_data.get("temp_caption"):
+                context.user_data["temp_caption"] = update.message.caption
 
             await update.message.reply_text(
-                f"📸 Gambar diterima!\n"
-                f"Jumlah: {len(context.user_data['temp_photos'])}\n\n"
-                "Hantar lagi gambar atau taip DONE."
+                f"📸 Gambar diterima! (Jumlah: {len(context.user_data['temp_photos'])}).\n"
+                "Hantar lagi atau taip DONE."
             )
-
             return
 
         if update.message.text:
-
             text_input = update.message.text.strip()
 
             if text_input.upper() == "DONE":
-
-                photos = context.user_data.get(
-                    "temp_photos", []
-                )
-
-                caption_text = context.user_data.get(
-                    "temp_caption", ""
-                )
+                photos = context.user_data.get("temp_photos", [])
+                caption_text = context.user_data.get("temp_caption", "")
 
                 if not photos:
-
-                    await update.message.reply_text(
-                        "⚠️ Tiada gambar dikesan."
-                    )
-
+                    await update.message.reply_text("⚠️ Tiada gambar dikesan.")
                     return
 
                 if not caption_text:
-
-                    await update.message.reply_text(
-                        "⚠️ Sila pastikan gambar pertama "
-                        "mempunyai kapsyen."
-                    )
-
+                    await update.message.reply_text("⚠️ Sila pastikan gambar pertama mempunyai kapsyen.")
                     return
 
                 lines = caption_text.split("\n")
-
                 if len(lines) < 3:
-
-                    await update.message.reply_text(
-                        "⚠️ Format kapsyen memerlukan sekurang-kurangnya 3 baris."
-                    )
-
+                    await update.message.reply_text("⚠️ Format kapsyen memerlukan sekurang-kurangnya 3 baris.")
                     return
 
                 title = lines[0].strip()
@@ -1181,130 +1047,52 @@ async def handle_message(
                 group_message_ids = []
 
                 try:
-
-                    read_opts = {
-                        "read_timeout": 60,
-                        "write_timeout": 60,
-                        "connect_timeout": 60,
-                    }
+                    read_opts = {"read_timeout": 60, "write_timeout": 60, "connect_timeout": 60}
 
                     if len(photos) > 1:
-
-                        media_list = [
-                            InputMediaPhoto(
-                                media=photos[0],
-                                caption=short_caption,
-                                parse_mode="Markdown",
-                            )
-                        ]
-
+                        media_list = [InputMediaPhoto(media=photos[0], caption=short_caption, parse_mode="Markdown")]
                         for photo_id in photos[1:]:
+                            media_list.append(InputMediaPhoto(media=photo_id))
 
-                            media_list.append(
-                                InputMediaPhoto(
-                                    media=photo_id
-                                )
-                            )
-
-                        sent_messages = await context.bot.send_media_group(
-                            chat_id=GROUP_CHAT_ID,
-                            media=media_list,
-                            **read_opts,
-                        )
-
+                        sent_messages = await context.bot.send_media_group(chat_id=GROUP_CHAT_ID, media=media_list, **read_opts)
                         for msg in sent_messages:
-
-                            group_message_ids.append(
-                                msg.message_id
-                            )
-
+                            group_message_ids.append(msg.message_id)
                     else:
+                        sent_msg = await context.bot.send_photo(chat_id=GROUP_CHAT_ID, photo=photos[0], caption=short_caption, parse_mode="Markdown", **read_opts)
+                        group_message_ids.append(sent_msg.message_id)
 
-                        sent_msg = await context.bot.send_photo(
-                            chat_id=GROUP_CHAT_ID,
-                            photo=photos[0],
-                            caption=short_caption,
-                            parse_mode="Markdown",
-                            **read_opts,
-                        )
-
-                        group_message_ids.append(
-                            sent_msg.message_id
-                        )
-
-                    desc_msg = await context.bot.send_message(
-                        chat_id=GROUP_CHAT_ID,
-                        text=full_desc,
-                        parse_mode="Markdown",
-                        disable_web_page_preview=True,
-                        **read_opts,
-                    )
-
-                    group_message_ids.append(
-                        desc_msg.message_id
-                    )
+                    desc_msg = await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=full_desc, parse_mode="Markdown", disable_web_page_preview=True, **read_opts)
+                    group_message_ids.append(desc_msg.message_id)
 
                 except Exception as e:
-
                     print(f"❌ Ralat hantar listing: {e}")
-
-                    await update.message.reply_text(
-                        f"❌ Gagal menghantar listing ke group:\n{e}"
-                    )
-
+                    await update.message.reply_text(f"❌ Gagal menghantar listing ke group: {e}")
                     return
 
                 listings_db[saved_id] = {
-
                     "photos": photos,
-
                     "title": title,
-
                     "price": price,
-
                     "desc": desc,
-
                     "status": "ACTIVE",
-
                     "group_message_ids": group_message_ids,
-
                 }
 
                 save_data()
-
                 context.user_data.clear()
-
                 await update_index_page(context)
 
                 await update.message.reply_text(
-                    f"✅ Listing #{saved_id} berjaya disimpan!\n\n"
-                    f"📦 Jumlah listing: {len(listings_db)}\n"
-                    "📢 Dihantar ke group.\n"
-                    "☁️ Backup telah diproses."
+                    f"✅ Listing #{saved_id} berjaya disimpan dan dihantar ke group!"
                 )
-
             else:
-
                 if not context.user_data.get("temp_caption"):
-
                     context.user_data["temp_caption"] = text_input
-
-                    await update.message.reply_text(
-                        "📝 Kapsyen diterima!\n"
-                        "Sekarang hantar gambar atau taip DONE."
-                    )
-
+                    await update.message.reply_text("📝 Kapsyen diterima! Sekarang hantar gambar atau taip DONE.")
                 else:
-
-                    await update.message.reply_text(
-                        "Sila hantar gambar seterusnya atau taip DONE."
-                    )
-
+                    await update.message.reply_text("Sila hantar gambar seterusnya atau taip DONE.")
     else:
-
-        await update.message.reply_text(
-            "Sila taip /start untuk membuka menu utama."
-        )
+        await update.message.reply_text("Sila taip /start untuk membuka menu utama.")
 
 
 # =============================================================
@@ -1315,15 +1103,18 @@ async def post_init(app: Application):
 
     print("🚀 Bot sedang memulakan sistem database...")
 
-    # Cuba baca daripada channel backup (Pinned / Sejarah Mesej)
+    # 1. Cuba muat dari Telegram Channel Backup dahulu
     loaded = await load_data_from_channel(app)
 
-    # Jika gagal, gunakan local JSON sebagai fallback
+    # 2. Jika gagal, cuba muat dari local JSON
     if not loaded:
-
-        print("⚠️ Menggunakan local database sebagai fallback.")
-
-        load_local_database()
+        print("⚠️ Cuba muat local JSON...")
+        loaded_local = load_local_database()
+        
+        # 3. Jika local JSON pun tiada, biarkan kekal guna 9 listing hardcoded di atas
+        if not loaded_local:
+            print(✅ Menggunakan hardcoded default database (9 listing aktif).)
+            save_data()
 
     print("======================================")
     print("🏠 BOT HARTANAH BERJAYA DIMULAKAN")
@@ -1342,7 +1133,6 @@ def main():
         target=run_web_server,
         daemon=True,
     )
-
     server_thread.start()
 
     request = HTTPXRequest(
@@ -1360,23 +1150,11 @@ def main():
         .build()
     )
 
-    app.add_handler(
-        CommandHandler("start", start)
-    )
-
-    app.add_handler(
-        CallbackQueryHandler(button_handler)
-    )
-
-    app.add_handler(
-        MessageHandler(
-            filters.PHOTO | (filters.TEXT & ~filters.COMMAND),
-            handle_message,
-        )
-    )
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.PHOTO | (filters.TEXT & ~filters.COMMAND), handle_message))
 
     print("🏠 Bot Hartanah sedang berjalan...")
-
     app.run_polling()
 
 
