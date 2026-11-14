@@ -84,7 +84,7 @@ listings_db = {
             "AgACAgUAAxkBAAICAAFq80AffEiZTWr9X2mL6HdITNoQSwACWBZrG6WwmFekxRhik3eEKAEAAwIAA3gAAz0E",
             "AgACAgUAAxkBAAICAWrzQB8hyqlZo9_cbVDtddZOzmIuAAJZFmsbpbCYV6tj-V3_dmJCAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICAmrzQB_qMVohU9HhPx1ZP_ppkidhAAJaFmsbpbCYV9ojUJ_lykdnAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeAADPQQ"
@@ -100,7 +100,7 @@ listings_db = {
             "AgACAgUAAxkBAAIC1Grzr0fG_052frLRuZ6RhEzFHqROAALcE2sbpbCgVzLpDBeiwTeFAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC1Wrzr0fb7NQBa5yqsRcmQb6Dxx41AALdE2sbpbCgV3fTj5eszwXJAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC1mrzr0dH1z5Jmmz__Y4uNd-0uow_AALeE2sbpbCgV-PW62CIaNjcAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Grzr0c4-OzrpZ2c2AphMnRfXrmpAALgE2sbpbCgV2KJW0fpEHB2AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Wrzr0fOS_cJoNzlN2KCTabDpm76AALhE2sbpbCgVy-7cAXCE1VbAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeAADPQQ",
@@ -132,7 +132,7 @@ listings_db = {
         "photos": [
             "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
@@ -925,13 +925,10 @@ async def button_handler(
         await update_group_description(context, l_id)
         await update_index_page(context)
 
-        # -------------------------------------------------------------
-        # AUTO QUOTE LINK ORIGINAL JIKA STATUS DITUKAR KEPADA BOOKED
-        # -------------------------------------------------------------
         if new_status == "BOOKED":
             group_msg_ids = listings_db[l_id].get("group_message_ids", [])
             if group_msg_ids:
-                first_msg_id = group_msg_ids[0]  # Ambil ID mesej gambar pertama listing
+                first_msg_id = group_msg_ids[0]
                 try:
                     await context.bot.send_message(
                         chat_id=GROUP_CHAT_ID,
@@ -1119,6 +1116,19 @@ async def handle_message(
                 context.user_data.clear()
                 await update_index_page(context)
 
+                # -------------------------------------------------------------
+                # AUTO QUOTE LINK ORIGINAL UNTUK LISTING BAHARU
+                # -------------------------------------------------------------
+                if group_message_ids:
+                    try:
+                        await context.bot.send_message(
+                            chat_id=GROUP_CHAT_ID,
+                            text="Assalamualaikum guys, listing baru masuk!! Jom kita sama-sama close the deal!!",
+                            reply_to_message_id=group_message_ids[0]
+                        )
+                    except Exception as new_quote_err:
+                        print(f"⚠️ Gagal hantar mesej quote listing baharu: {new_quote_err}")
+
                 await update.message.reply_text(
                     f"✅ Listing #{saved_id} berjaya disimpan dan dihantar ke group!"
                 )
@@ -1161,6 +1171,8 @@ async def post_init(app: Application):
 # MAIN
 # =============================================================
 
+main():
+# (Pastikan fungsi main kekal seperti asal di bawah)
 def main():
 
     server_thread = threading.Thread(
