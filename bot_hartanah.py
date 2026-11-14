@@ -87,7 +87,7 @@ listings_db = {
             "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeQADPQQ"
+            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI EMAS, KAJANG 2",
         "price": "RM1,300 / bulan",
@@ -103,10 +103,10 @@ listings_db = {
             "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC2Grzr0c4-OzrpZ2c2AphMnRfXrmpAALgE2sbpbCgV2KJW0fpEHB2AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Wrzr0fOS_cJoNzlN2KCTabDpm76AALhE2sbpbCgVy-7cAXCE1VbAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC3Grzr0eVkgIFKamDHWy8owrsSmJYAALkE2sbpbCgV362wBr-0J3HAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeQADPQQ"
+            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,200",
         "price": "RM1,200 / bulan",
@@ -119,8 +119,8 @@ listings_db = {
             "AgACAgUAAxkBAAIDImrzsf5O5-JesbEuMHkUCk4Ul3HPAALoE2sbpbCgV5Wr5TyolNBdAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDI2rzsf5c1jKKRh7qbcHaDKqZ3vprAALpE2sbpbCgVynyX_nWdlwlAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDJGrzsf6D6jtKaA7mFjzLscagbIMWAALqE2sbpbCgV5pMHZbOfdkaAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeQADPQQ"
+            "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
         "price": "RM1,600 / bulan",
@@ -132,12 +132,12 @@ listings_db = {
         "photos": [
             "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeQADPQQ",
+            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDS2rzs6shI2Xnv8TChLt6Fm6ulkDKAAL3E2sbpbCgV16_Nu-N2Fy4AQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: APARTMENT KARISMA, ECO MAJESTIC, SEMENYIH | RM1,000",
@@ -195,7 +195,7 @@ listings_db = {
 }
 
 pinned_index_message_id = None
-backup_pinned_message_id = None  # Pembolehubah untuk simpan ID mesej backup yang dipin sebelum ini
+backup_pinned_message_id = None
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -335,7 +335,7 @@ async def load_data_from_channel(app: Application):
             filename = pinned.document.file_name or ""
             if filename.lower().endswith(".json"):
                 target_document = pinned.document
-                backup_pinned_message_id = pinned.message_id  # Simpan ID mesej yang dipin sekarang
+                backup_pinned_message_id = pinned.message_id
                 print("📌 Dokumen JSON dijumpai melalui Pinned Message.")
 
         if not target_document:
@@ -437,7 +437,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         file_doc = io.BytesIO(json_bytes)
         file_doc.name = DB_FILE
 
-        # 1. Hantar fail backup baharu ke channel backup
         sent_msg = await context.bot.send_document(
             chat_id=BACKUP_CHANNEL_ID,
             document=file_doc,
@@ -450,7 +449,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
 
         new_msg_id = sent_msg.message_id
 
-        # 2. Pin mesej backup baharu
         try:
             await context.bot.pin_chat_message(
                 chat_id=BACKUP_CHANNEL_ID,
@@ -459,7 +457,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
         except Exception as pin_error:
             print(f"⚠️ Gagal pin backup baharu: {pin_error}")
 
-        # 3. Unpin dan Delete mesej backup yang lama (jika ada)
         if backup_pinned_message_id and backup_pinned_message_id != new_msg_id:
             try:
                 await context.bot.unpin_chat_message(
@@ -478,7 +475,6 @@ async def backup_to_channel(context: ContextTypes.DEFAULT_TYPE):
             except Exception as del_err:
                 print(f"⚠️ Nota padam mesej lama: {del_err}")
 
-        # Kemas kini ID pin kepada yang baharu
         backup_pinned_message_id = new_msg_id
 
         print("☁️ Backup baharu berjaya dihantar dan dipinn ke Telegram Channel.")
@@ -600,11 +596,11 @@ async def update_group_description(context, l_id):
 
     status_val = item.get("status", "ACTIVE")
 
-    status_str = (
-        f" - *[{status_val}]*"
-        if status_val != "ACTIVE"
-        else ""
-    )
+    status_str = ""
+    if status_val == "BOOKED":
+        status_str = " - *⛔️ [BOOKED]*"
+    elif status_val == "SOLD":
+        status_str = " - *🔴 [SOLD]*"
 
     price = get_display_price(item)
 
@@ -681,12 +677,10 @@ async def update_index_page(context: ContextTypes.DEFAULT_TYPE):
                 status_val = item.get("status", "ACTIVE")
 
                 status_str = ""
-
                 if status_val == "BOOKED":
-                    status_str = " [BOOKED]"
-
+                    status_str = " ⛔️ [BOOKED]"
                 elif status_val == "SOLD":
-                    status_str = " [SOLD]"
+                    status_str = " 🔴 [SOLD]"
 
                 group_msg_ids = item.get(
                     "group_message_ids", []
@@ -910,7 +904,7 @@ async def button_handler(
 
         keyboard = [
             [InlineKeyboardButton("🟢 ACTIVE", callback_data=f"setstat_{l_id}_ACTIVE")],
-            [InlineKeyboardButton("🟡 BOOKED", callback_data=f"setstat_{l_id}_BOOKED")],
+            [InlineKeyboardButton("⛔️ BOOKED", callback_data=f"setstat_{l_id}_BOOKED")],
             [InlineKeyboardButton("🔴 SOLD", callback_data=f"setstat_{l_id}_SOLD")],
         ]
 
@@ -930,6 +924,22 @@ async def button_handler(
         save_data()
         await update_group_description(context, l_id)
         await update_index_page(context)
+
+        # -------------------------------------------------------------
+        # AUTO QUOTE LINK ORIGINAL JIKA STATUS DITUKAR KEPADA BOOKED
+        # -------------------------------------------------------------
+        if new_status == "BOOKED":
+            group_msg_ids = listings_db[l_id].get("group_message_ids", [])
+            if group_msg_ids:
+                first_msg_id = group_msg_ids[0]  # Ambil ID mesej gambar pertama listing
+                try:
+                    await context.bot.send_message(
+                        chat_id=GROUP_CHAT_ID,
+                        text="Assalamualaikum guys, unit ni dah di booked ya. Boleh turunkan iklan. TQ",
+                        reply_to_message_id=first_msg_id
+                    )
+                except Exception as quote_err:
+                    print(f"⚠️ Gagal hantar mesej quote booked ke group: {quote_err}")
 
         await query.message.reply_text(
             f"✅ Status Listing #{l_id} ditukar kepada {new_status}."
@@ -1130,15 +1140,12 @@ async def post_init(app: Application):
 
     print("🚀 Bot sedang memulakan sistem database...")
 
-    # 1. Cuba muat dari Telegram Channel Backup dahulu
     loaded = await load_data_from_channel(app)
 
-    # 2. Jika gagal, cuba muat dari local JSON
     if not loaded:
         print("⚠️ Cuba muat local JSON...")
         loaded_local = load_local_database()
         
-        # 3. Jika local JSON pun tiada, biarkan kekal guna 9 listing hardcoded di atas
         if not loaded_local:
             print("✅ Menggunakan hardcoded default database (9 listing aktif).")
             save_data()
