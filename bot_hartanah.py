@@ -85,7 +85,7 @@ listings_db = {
             "AgACAgUAAxkBAAICAWrzQB8hyqlZo9_cbVDtddZOzmIuAAJZFmsbpbCYV6tj-V3_dmJCAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICAmrzQB_qMVohU9HhPx1ZP_ppkidhAAJaFmsbpbCYV9ojUJ_lykdnAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeQADPQQ"
         ],
@@ -100,13 +100,13 @@ listings_db = {
             "AgACAgUAAxkBAAIC1Grzr0fG_052frLRuZ6RhEzFHqROAALcE2sbpbCgVzLpDBeiwTeFAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC1Wrzr0fb7NQBa5yqsRcmQb6Dxx41AALdE2sbpbCgV3fTj5eszwXJAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC1mrzr0dH1z5Jmmz__Y4uNd-0uow_AALeE2sbpbCgV-PW62CIaNjcAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC2Grzr0c4-OzrpZ2c2AphMnRfXrmpAALgE2sbpbCgV2KJW0fpEHB2AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Wrzr0fOS_cJoNzlN2KCTabDpm76AALhE2sbpbCgVy-7cAXCE1VbAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC3Grzr0eVkgIFKamDHWy8owrsSmJYAALkE2sbpbCgV362wBr-0J3HAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI IDAMAN ABADI, KAJANG 2 | RM1,200",
         "price": "RM1,200 / bulan",
@@ -120,7 +120,7 @@ listings_db = {
             "AgACAgUAAxkBAAIDI2rzsf5c1jKKRh7qbcHaDKqZ3vprAALpE2sbpbCgVynyX_nWdlwlAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDJGrzsf6D6jtKaA7mFjzLscagbIMWAALqE2sbpbCgV5pMHZbOfdkaAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
         "price": "RM1,600 / bulan",
@@ -132,11 +132,11 @@ listings_db = {
         "photos": [
             "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDS2rzs6shI2Xnv8TChLt6Fm6ulkDKAAL3E2sbpbCgV16_Nu-N2Fy4AQADAgADeAADPQQ"
         ],
@@ -775,6 +775,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("➕ Tambah Listing Baru", callback_data="add_listing")],
         [InlineKeyboardButton("✏️ Kemaskini Harga", callback_data="edit_price_menu")],
         [InlineKeyboardButton("📝 Kemaskini Description", callback_data="edit_desc_menu")],
+        [InlineKeyboardButton("🔗 Edit Mesej (Via Link)", callback_data="edit_via_link")],
         [InlineKeyboardButton("🏷️ Set Status", callback_data="set_status")],
         [InlineKeyboardButton("🗑️ Padam Listing", callback_data="delete_listing")],
         [InlineKeyboardButton("📢 Refresh Index", callback_data="refresh_index")],
@@ -817,6 +818,16 @@ async def button_handler(
             "Baris 2: Harga\n"
             "Baris 3 dan seterusnya: Description\n\n"
             "Selepas selesai, taip **DONE**."
+        )
+
+    elif data == "edit_via_link":
+
+        context.user_data["state"] = "WAITING_FOR_EDIT_LINK"
+        await query.message.reply_text(
+            "🔗 **Edit Mesej Group (Via Link)**\n\n"
+            "Sila pergi ke group, tekan lama pada mesej bot yang mahu diedit, pilih **Copy Link**, dan *paste* link tersebut di sini.\n\n"
+            "Contoh: `https://t.me/c/3288686118/2865`",
+            parse_mode="Markdown"
         )
 
     elif data == "refresh_index":
@@ -984,7 +995,101 @@ async def handle_message(
 
     state = context.user_data.get("state")
 
-    if state == "WAITING_FOR_NEW_PRICE":
+    if state == "WAITING_FOR_EDIT_LINK":
+        if not update.message.text:
+            await update.message.reply_text("⚠️ Sila *paste* link mesej Telegram yang sah.", parse_mode="Markdown")
+            return
+
+        link_text = update.message.text.strip()
+        match = re.search(r"t\.me/(?:c/\d+|[^/]+)/(\d+)", link_text)
+
+        if not match:
+            await update.message.reply_text(
+                "❌ Format link tidak sah. Pastikan anda menyalin link mesej terus dari group.\n"
+                "Contoh: `https://t.me/c/3288686118/2865`",
+                parse_mode="Markdown"
+            )
+            return
+
+        target_msg_id = int(match.group(1))
+        context.user_data["target_edit_msg_id"] = target_msg_id
+        context.user_data["state"] = "WAITING_FOR_EDIT_LINK_TEXT"
+
+        # Semak jika mesej ini kepunyaan mana-mana listing dalam database
+        matched_listing = None
+        for l_id, item in listings_db.items():
+            if target_msg_id in item.get("group_message_ids", []):
+                matched_listing = (l_id, item)
+                break
+
+        info_text = f"✅ Mesej ID `{target_msg_id}` dikesan.\n\n"
+        if matched_listing:
+            l_id, item = matched_listing
+            info_text += (
+                f"📌 Berkaitan dengan **Listing #{l_id}** ({item['title']}).\n"
+                "Jika mesej ini adalah mesej *Maklumat Lanjut (Description)*, pangkalan data juga akan dikemas kini secara automatik.\n\n"
+            )
+
+        info_text += "✍️ Sila taip dan hantar **teks/kapsyen baharu** untuk menggantikan mesej tersebut:"
+        await update.message.reply_text(info_text, parse_mode="Markdown")
+        return
+
+    elif state == "WAITING_FOR_EDIT_LINK_TEXT":
+        new_text = update.message.text if update.message.text else update.message.caption
+        if not new_text:
+            await update.message.reply_text("⚠️ Sila hantar teks baharu.")
+            return
+
+        target_msg_id = context.user_data.get("target_edit_msg_id")
+        edit_success = False
+
+        # Cuba edit sebagai mesej teks biasa dahulu
+        try:
+            await context.bot.edit_message_text(
+                chat_id=GROUP_CHAT_ID,
+                message_id=target_msg_id,
+                text=new_text,
+                parse_mode="Markdown",
+                disable_web_page_preview=True,
+            )
+            edit_success = True
+        except Exception:
+            # Jika gagal (sebab mesej asal adalah gambar/album), cuba edit sebagai kapsyen gambar
+            try:
+                await context.bot.edit_message_caption(
+                    chat_id=GROUP_CHAT_ID,
+                    message_id=target_msg_id,
+                    caption=new_text,
+                    parse_mode="Markdown",
+                )
+                edit_success = True
+            except Exception as e2:
+                await update.message.reply_text(
+                    f"❌ Gagal mengedit mesej tersebut. Pastikan mesej itu dihantar oleh bot ini dan teks baharu berbeza daripada teks asal.\n\nRalat: `{e2}`",
+                    parse_mode="Markdown"
+                )
+                context.user_data.clear()
+                return
+
+        if edit_success:
+            # Kemas kini database jika mesej yang diedit adalah mesej description terakhir listing
+            db_updated = False
+            for l_id, item in listings_db.items():
+                msg_ids = item.get("group_message_ids", [])
+                if msg_ids and msg_ids[-1] == target_msg_id:
+                    item["desc"] = new_text
+                    db_updated = True
+                    break
+
+            if db_updated:
+                save_data()
+                await backup_to_channel(context)
+
+            context.user_data.clear()
+            await update.message.reply_text("✅ Mesej dalam group berjaya dikemas kini!")
+        return
+
+    elif state == "WAITING_FOR_NEW_PRICE":
 
         if not update.message.text:
             await update.message.reply_text("⚠️ Sila hantar teks harga sahaja.")
