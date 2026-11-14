@@ -87,7 +87,7 @@ listings_db = {
             "AgACAgUAAxkBAAICA2rzQB-iZ65OqbUlg-QjFbJMW8SzAAJVFmsbpbCYV-_ko_RTJ7ryAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAICBGrzQB-fI7GcpiKPsJXFmb2vBhu2AAJWFmsbpbCYV7u6Ve_qwIS9AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAICBWrzQB-oH-vQspMIqNe9geDSHoW-AAJbFmsbpbCYVzv-U0NDovZQAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeAADPQQ"
+            "AgACAgUAAxkBAAICBmrzQB-x72X7tN5GN6lkwLtxsL0oAAJXFmsbpbCYV63tp9SzkrGKAQADAgADeQADPQQ"
         ],
         "title": "UNTUK DISEWA: RESIDENSI EMAS, KAJANG 2",
         "price": "RM1,300 / bulan",
@@ -103,7 +103,7 @@ listings_db = {
             "AgACAgUAAxkBAAIC12rzr0d2OjiECV1ZlKepdj2uGMtAAALfE2sbpbCgV1DEwt8T4I73AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Grzr0c4-OzrpZ2c2AphMnRfXrmpAALgE2sbpbCgV2KJW0fpEHB2AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC2Wrzr0fOS_cJoNzlN2KCTabDpm76AALhE2sbpbCgVy-7cAXCE1VbAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIC2mrzr0fMe0fUSFjz5uYpZNfq5od2AALiE2sbpbCgVxrFiINukd80AQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIC22rzr0eQ8m3EtzfM_1FqW9i7gi-3AALjE2sbpbCgV_LsobN88gZsAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC3Grzr0eVkgIFKamDHWy8owrsSmJYAALkE2sbpbCgV362wBr-0J3HAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIC3mrzr0eDaoxpIhmxyFdEU8uDVyX7AALmE2sbpbCgVxM33lWUvtA1AQADAgADeAADPQQ"
@@ -119,7 +119,7 @@ listings_db = {
             "AgACAgUAAxkBAAIDImrzsf5O5-JesbEuMHkUCk4Ul3HPAALoE2sbpbCgV5Wr5TyolNBdAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDI2rzsf5c1jKKRh7qbcHaDKqZ3vprAALpE2sbpbCgVynyX_nWdlwlAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDJGrzsf6D6jtKaA7mFjzLscagbIMWAALqE2sbpbCgV5pMHZbOfdkaAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDJWrzsf50gPPK6TUDdZeUaUIEvdlwAALrE2sbpbCgV72qWbo-q_ljAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDJmrzsf7OW-K2O5OqcROfVsov4XkLAALsE2sbpbCgV8mFDIkl7xtJAQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: CERRADO SUITES, SOUTHVILLE CITY | RM1,600",
@@ -132,12 +132,12 @@ listings_db = {
         "photos": [
             "AgACAgUAAxkBAAIDQ2rzs6u64k_5iMgOKn5gPEpNfg5mAALvE2sbpbCgVxyfpE5opmCYAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDRGrzs6vEUmuJgqjPCUX9zlAPCRo3AALwE2sbpbCgV4K8jGP5oPB4AQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeQADPQQ",
-            "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRWrzs6umqk1YtfFtkZtmC8hA-AfOAALxE2sbpbCgV4dPukQHqWGIAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDRmrzs6uTsU4XWQPTKtulJD8d-TCMAALyE2sbpbCgVxdRWLD_Wr0TAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDR2rzs6t7S689JlxXM1IR4vJLy80kAALzE2sbpbCgV-9bW3lWr1K7AQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSGrzs6t82Rge74I9TF9wX5vvKp7KAAL0E2sbpbCgVw-fSPgagPSgAQADAgADeAADPQQ",
             "AgACAgUAAxkBAAIDSWrzs6u4N9j8KCNrJ-p7fiAJyc0dAAL1E2sbpbCgVz9flO5WIqsrAQADAgADeAADPQQ",
-            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeAADPQQ",
+            "AgACAgUAAxkBAAIDSmrzs6vufPJJ1z0SBTzKbuxPHF1vAAL2E2sbpbCgV_jsZPsVyRgZAQADAgADeQADPQQ",
             "AgACAgUAAxkBAAIDS2rzs6shI2Xnv8TChLt6Fm6ulkDKAAL3E2sbpbCgV16_Nu-N2Fy4AQADAgADeAADPQQ"
         ],
         "title": "UNTUK DISEWA: APARTMENT KARISMA, ECO MAJESTIC, SEMENYIH | RM1,000",
@@ -1116,9 +1116,6 @@ async def handle_message(
                 context.user_data.clear()
                 await update_index_page(context)
 
-                # -------------------------------------------------------------
-                # AUTO QUOTE LINK ORIGINAL UNTUK LISTING BAHARU
-                # -------------------------------------------------------------
                 if group_message_ids:
                     try:
                         await context.bot.send_message(
@@ -1140,6 +1137,14 @@ async def handle_message(
                     await update.message.reply_text("Sila hantar gambar seterusnya atau taip DONE.")
     else:
         await update.message.reply_text("Sila taip /start untuk membuka menu utama.")
+
+
+# =============================================================
+# ERROR HANDLER
+# =============================================================
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
 
 # =============================================================
@@ -1171,8 +1176,6 @@ async def post_init(app: Application):
 # MAIN
 # =============================================================
 
-main():
-# (Pastikan fungsi main kekal seperti asal di bawah)
 def main():
 
     server_thread = threading.Thread(
@@ -1199,6 +1202,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.PHOTO | (filters.TEXT & ~filters.COMMAND), handle_message))
+    app.add_error_handler(error_handler)
 
     print("🏠 Bot Hartanah sedang berjalan...")
     app.run_polling()
